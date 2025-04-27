@@ -34,3 +34,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## Next step
+- update the UI such that on click of any chapter or section, it should fetch the content from the backend and display it
+    - It should be done based on the page number we provide
+    - Based on above content, display it in the UI
+    - We can pass this content of chatgpt and we can get summary of that chapter
+    - Add a provision to fetch the images as well
+    - We could also pass this image to openAI api

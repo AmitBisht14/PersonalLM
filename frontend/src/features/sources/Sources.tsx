@@ -67,8 +67,8 @@ export function Sources({ onCollapse, isCollapsed }: SourcesProps) {
   };
 
   return (
-    <section className="h-full p-4 max-h-[80vh] overflow-y-auto">
-      <h2 className="text-xl font-semibold mb-4 text-white">Sources</h2>
+    <section className="h-full flex flex-col p-4 text-sm overflow-hidden min-h-0">
+      <h2 className="text-lg font-semibold mb-4 text-white">Sources</h2>
       <PDFSource
         onFileSelect={handleFileSelect}
         onFileRemove={handleFileRemove}
@@ -76,7 +76,11 @@ export function Sources({ onCollapse, isCollapsed }: SourcesProps) {
         toast={toast}
         onToastClose={() => setToast(null)}
       />
-      {pdfStructure && <PDFStructure structure={pdfStructure} />}
+      {pdfStructure && (
+        <div className="flex-1 min-h-0">
+          <PDFStructure structure={pdfStructure} />
+        </div>
+      )}
     </section>
   );
 }

@@ -25,7 +25,7 @@ export function PDFSource({ onFileSelect, onFileRemove, loading, toast, onToastC
   };
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-xl text-sm">
       {!selectedFile ? (
         <FileUpload
           onFileSelect={handleSelect}
@@ -34,7 +34,7 @@ export function PDFSource({ onFileSelect, onFileRemove, loading, toast, onToastC
         />
       ) : (
         <div className="flex items-center gap-3 bg-gray-800 rounded p-3 mt-2">
-          <span className="text-green-400 font-mono truncate max-w-xs">{selectedFile.name}</span>
+          <span className="text-green-400 font-mono truncate max-w-xs text-xs">{selectedFile.name}</span>
           <button
             onClick={handleRemove}
             className="p-1 hover:bg-gray-700 rounded-full"
@@ -44,7 +44,7 @@ export function PDFSource({ onFileSelect, onFileRemove, loading, toast, onToastC
           </button>
         </div>
       )}
-      {loading && <div className="mt-4 text-blue-400">Analyzing PDF...</div>}
+      {loading && <div className="mt-4 text-blue-400 text-xs">Analyzing PDF...</div>}
       {toast && (
         <Toast
           type={toast.type}

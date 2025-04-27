@@ -21,6 +21,7 @@ class PDFStructureAnalyzer:
         """Extract structure from PDF's table of contents"""
         chapters = []
         current_chapter = None
+        pdf_title = doc.metadata.get("title") or filename
         
         for level, title, page in toc:
             if level == 1:  # Chapter
@@ -41,13 +42,14 @@ class PDFStructureAnalyzer:
                 current_chapter.sections.append(section)
 
         PDFStructureAnalyzer._finalize_chapters(doc, chapters)
-        return PDFStructure(filename=filename, total_pages=len(doc), chapters=chapters)
+        return PDFStructure(filename=pdf_title, total_pages=len(doc), chapters=chapters)
 
     @staticmethod
     def analyze_from_content(doc: fitz.Document, filename: str) -> PDFStructure:
         """Extract structure by analyzing PDF content"""
         chapters = []
         current_chapter = None
+        pdf_title = doc.metadata.get("title") or filename
         
         for page_num in range(len(doc)):
             page = doc[page_num]
@@ -88,7 +90,7 @@ class PDFStructureAnalyzer:
                             current_chapter.sections.append(section)
 
         PDFStructureAnalyzer._finalize_chapters(doc, chapters)
-        return PDFStructure(filename=filename, total_pages=len(doc), chapters=chapters)
+        return PDFStructure(filename=pdf_title, total_pages=len(doc), chapters=chapters)
 
     @staticmethod
     def _finalize_chapters(doc: fitz.Document, chapters: List[Chapter]) -> None:

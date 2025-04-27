@@ -1,29 +1,44 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.routers import chat
+from app.core.config import get_settings
+from app.models.responses import ErrorResponse
 
-app = FastAPI(title="PersonalLM API", description="Simple API to test OpenAI connectivity")
+settings = get_settings()
+
+app = FastAPI(
+    title=settings.app_name,
+    description="API for interacting with OpenAI's GPT models"
+)
 
 # Configure CORS
-origins = [
-    "http://localhost:3000",    # Next.js dev server
-    "http://127.0.0.1:3000",
-    "http://localhost:8000",    # FastAPI server
-    "http://127.0.0.1:8000",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[settings.frontend_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 # Include routers
-app.include_router(chat.router, prefix="/api/v1", tags=["openai"])
+app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Global exception handler for unhandled exceptions"""
+    error_response = ErrorResponse(
+        status="error",
+        message="An unexpected error occurred",
+        error_code="INTERNAL_SERVER_ERROR",
+        details={"error": str(exc)}
+    )
+    return JSONResponse(
+        status_code=500,
+        content=error_response.model_dump()
+    )
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to PersonalLM API"}
+    """Root endpoint"""
+    return {"message": f"Welcome to {settings.app_name}"}

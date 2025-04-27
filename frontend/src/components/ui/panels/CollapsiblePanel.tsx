@@ -1,4 +1,4 @@
-import { CollapseButton } from './CollapseButton';
+import { CollapseButton } from '../buttons/CollapseButton';
 
 interface CollapsiblePanelProps {
   children: React.ReactNode;

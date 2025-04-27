@@ -2,10 +2,10 @@
 
 import { useState, useRef } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
-import { Sources } from './bodyComponents/Sources';
-import { Chat } from './bodyComponents/Chat';
-import { Studio } from './bodyComponents/Studio';
-import { CollapsiblePanel } from './bodyComponents/CollapsiblePanel';
+import { Sources } from '@/features/sources/Sources';
+import { Chat } from '@/features/chat/Chat';
+import { Studio } from '@/features/studio/Studio';
+import { CollapsiblePanel } from '@/components/ui/panels/CollapsiblePanel';
 
 export function Body() {
   const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);

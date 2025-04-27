@@ -1,5 +1,3 @@
-import { CollapseButton } from './CollapseButton';
-
 interface StudioProps {
   onCollapse: () => void;
   isCollapsed: boolean;

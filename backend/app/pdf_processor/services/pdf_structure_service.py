@@ -1,65 +1,28 @@
 import fitz
 from fastapi import UploadFile
-import os
-import re
 from typing import List, Tuple
-from ..models.pdf_models import PDFInfo, PDFStructure, Chapter, Section
+from ..models.pdf_models import PDFStructure, Chapter, Section
+from .base_pdf_service import BasePDFService
 
-class PDFService:
-    @staticmethod
-    async def get_pdf_info(file: UploadFile) -> PDFInfo:
-        """
-        Get basic information about the PDF file
-        """
-        # Create a temporary file to store the upload
-        temp_file_path = f"temp_{file.filename}"
-        try:
-            # Save uploaded file temporarily
-            content = await file.read()
-            with open(temp_file_path, "wb") as temp_file:
-                temp_file.write(content)
-            
-            # Open and analyze PDF
-            with fitz.open(temp_file_path) as doc:
-                metadata = doc.metadata
-                return PDFInfo(
-                    filename=file.filename,
-                    total_pages=len(doc),
-                    title=metadata.get('title'),
-                    author=metadata.get('author')
-                )
-                
-        finally:
-            # Clean up temporary file
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
-
+class PDFStructureService(BasePDFService):
     @staticmethod
     async def analyze_structure(file: UploadFile) -> PDFStructure:
         """
         Analyze PDF structure to extract chapters and sections
         """
-        temp_file_path = f"temp_{file.filename}"
+        temp_file_path = await BasePDFService.save_temp_file(file)
         try:
-            # Save uploaded file temporarily
-            content = await file.read()
-            with open(temp_file_path, "wb") as temp_file:
-                temp_file.write(content)
-            
             # Open and analyze PDF
             with fitz.open(temp_file_path) as doc:
                 # First try to get structure from table of contents
                 toc = doc.get_toc()
                 if toc:
-                    return PDFService._analyze_from_toc(doc, file.filename, toc)
+                    return PDFStructureService._analyze_from_toc(doc, file.filename, toc)
                 
                 # If no TOC, analyze using content analysis
-                return PDFService._analyze_from_content(doc, file.filename)
-                
+                return PDFStructureService._analyze_from_content(doc, file.filename)
         finally:
-            # Clean up temporary file
-            if os.path.exists(temp_file_path):
-                os.remove(temp_file_path)
+            BasePDFService.cleanup_temp_file(temp_file_path)
 
     @staticmethod
     def _analyze_from_toc(doc: fitz.Document, filename: str, toc: List[Tuple[int, str, int]]) -> PDFStructure:
@@ -149,7 +112,7 @@ class PDFService:
                         is_bold = "Bold" in span["font"].lower()
                         
                         # Check for chapter heading
-                        if (PDFService._is_chapter_heading(text, font_size, is_bold, chapter_patterns)):
+                        if (PDFStructureService._is_chapter_heading(text, font_size, is_bold, chapter_patterns)):
                             if current_chapter:
                                 current_chapter.end_page = page_num
                                 current_chapter.length = current_chapter.end_page - current_chapter.start_page + 1
@@ -166,7 +129,7 @@ class PDFService:
                         
                         # Check for section heading
                         elif (current_chapter and 
-                              PDFService._is_section_heading(text, font_size, is_bold, section_patterns)):
+                              PDFStructureService._is_section_heading(text, font_size, is_bold, section_patterns)):
                             section = Section(
                                 title=text,
                                 page_number=page_num + 1
@@ -199,20 +162,27 @@ class PDFService:
         """
         Determine if text is likely a chapter heading
         """
-        return (
-            any(re.match(pattern, text.lower()) for pattern in patterns)
-            and font_size >= 14  # Larger font
-            and is_bold  # Usually bold
-            and len(text.split()) < 10  # Not too long
-        )
+        # Check if text matches any chapter pattern
+        if any(re.match(pattern, text.lower()) for pattern in patterns):
+            return True
+        
+        # Consider text formatting
+        if is_bold and font_size >= 14:
+            return True
+            
+        return False
 
     @staticmethod
     def _is_section_heading(text: str, font_size: float, is_bold: bool, patterns: List[str]) -> bool:
         """
         Determine if text is likely a section heading
         """
-        return (
-            any(re.match(pattern, text) for pattern in patterns)
-            and font_size >= 12  # Medium-large font
-            and len(text.split()) < 12  # Not too long
-        )
+        # Check if text matches any section pattern
+        if any(re.match(pattern, text.lower()) for pattern in patterns):
+            return True
+        
+        # Consider text formatting
+        if (is_bold and 12 <= font_size < 14) or font_size >= 12:
+            return True
+            
+        return False

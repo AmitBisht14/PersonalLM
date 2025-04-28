@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from ..services.pdf_service import PDFService
+from ..services.pdf_info_service import PDFInfoService
+from ..services.pdf_structure_service import PDFStructureService
 from ..models.pdf_models import PDFInfo, PDFStructure
 
 router = APIRouter(
@@ -21,7 +22,7 @@ async def analyze_pdf(
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
     
-    pdf_service = PDFService()
+    pdf_service = PDFInfoService()
     info = await pdf_service.get_pdf_info(file)
     return info
 
@@ -41,6 +42,6 @@ async def analyze_pdf_structure(
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
     
-    pdf_service = PDFService()
+    pdf_service = PDFStructureService()
     structure = await pdf_service.analyze_structure(file)
     return structure

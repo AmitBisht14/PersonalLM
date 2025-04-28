@@ -52,7 +52,11 @@ export function PDFStructure({ structure }: PDFStructureProps) {
                   )}
                 </button>
               )}
-              <div className="font-semibold text-blue-300 text-base">
+              <div
+                className="font-semibold text-blue-300 text-base cursor-pointer hover:underline"
+                onClick={() => alert(`Chapter Pages: ${chapter.start_page} - ${chapter.end_page}`)}
+                title="Show chapter page range"
+              >
                 {chapter.title}
               </div>
             </div>

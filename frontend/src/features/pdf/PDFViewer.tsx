@@ -70,10 +70,7 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 flex-shrink-0 bg-gray-900">
-        <h2 className="text-lg font-semibold text-white">{pdfStructure.filename}</h2>
-        <div className="text-blue-300 text-sm mt-1">
-          Chapter: {selectedChapter.title}
-        </div>
+        Chapter: {selectedChapter.title}
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
         <div className="p-4 bg-gray-800">

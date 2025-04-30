@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 class PDFInfo(BaseModel):
     filename: str
@@ -22,3 +22,14 @@ class PDFStructure(BaseModel):
     filename: str
     total_pages: int
     chapters: List[Chapter]
+
+class PDFPageContent(BaseModel):
+    page_number: int
+    text: str
+
+class PDFContent(BaseModel):
+    filename: str
+    start_page: int
+    end_page: int
+    total_pages: int
+    pages: List[PDFPageContent]

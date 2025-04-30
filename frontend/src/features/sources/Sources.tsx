@@ -2,42 +2,22 @@
 
 import { useState } from 'react';
 import { PDFSource } from './PDFSource';
-import { PDFStructure } from './PDFStructure';
 import { ToastType } from '@/components/ui/toast/Toast';
+import { Chapter } from '../../types/pdf';
 
 interface SourcesProps {
   onCollapse: () => void;
   isCollapsed: boolean;
+  onPDFStructure?: (file: File | null, structure: { filename: string; total_pages: number; chapters: Chapter[] } | null) => void;
 }
 
-interface Section {
-  title: string;
-  page_number: number;
-}
-
-interface Chapter {
-  title: string;
-  start_page: number;
-  end_page: number;
-  length: number;
-  sections: Section[];
-}
-
-interface PDFStructureType {
-  filename: string;
-  total_pages: number;
-  chapters: Chapter[];
-}
-
-export function Sources({ onCollapse, isCollapsed }: SourcesProps) {
+export function Sources({ onCollapse, isCollapsed, onPDFStructure }: SourcesProps) {
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
-  const [pdfStructure, setPdfStructure] = useState<PDFStructureType | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleFileSelect = async (file: File) => {
     setToast(null);
     setLoading(true);
-    setPdfStructure(null);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -49,17 +29,26 @@ export function Sources({ onCollapse, isCollapsed }: SourcesProps) {
         throw new Error('Failed to analyze PDF');
       }
       const data = await res.json();
-      setPdfStructure(data);
+      console.log('Received structure:', data);
+      if (onPDFStructure) {
+        onPDFStructure(file, data);
+      }
       setToast({ type: 'success', message: `PDF analyzed successfully: ${data.filename}` });
     } catch (err: any) {
+      console.error('Error analyzing PDF:', err);
       setToast({ type: 'error', message: err.message || 'Error analyzing PDF' });
+      if (onPDFStructure) {
+        onPDFStructure(null, null);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleFileRemove = () => {
-    setPdfStructure(null);
+    if (onPDFStructure) {
+      onPDFStructure(null, null);
+    }
     setToast({
       type: 'info',
       message: 'File removed',
@@ -67,20 +56,17 @@ export function Sources({ onCollapse, isCollapsed }: SourcesProps) {
   };
 
   return (
-    <section className="h-full flex flex-col p-4 text-sm overflow-hidden min-h-0">
-      <h2 className="text-lg font-semibold mb-4 text-white">Sources</h2>
-      <PDFSource
-        onFileSelect={handleFileSelect}
-        onFileRemove={handleFileRemove}
-        loading={loading}
-        toast={toast}
-        onToastClose={() => setToast(null)}
-      />
-      {pdfStructure && (
-        <div className="flex-1 min-h-0">
-          <PDFStructure structure={pdfStructure} />
-        </div>
-      )}
-    </section>
+    <div className="flex flex-col min-h-0">
+      <div className="p-4">
+        <h2 className="text-lg font-semibold mb-4 text-white">Sources</h2>
+        <PDFSource
+          onFileSelect={handleFileSelect}
+          onFileRemove={handleFileRemove}
+          loading={loading}
+          toast={toast}
+          onToastClose={() => setToast(null)}
+        />
+      </div>
+    </div>
   );
 }

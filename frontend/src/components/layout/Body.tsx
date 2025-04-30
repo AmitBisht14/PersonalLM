@@ -1,17 +1,28 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
 import { Sources } from '@/features/sources/Sources';
 import { Chat } from '@/features/chat/Chat';
-import { Studio } from '@/features/studio/Studio';
 import { CollapsiblePanel } from '@/components/ui/panels/CollapsiblePanel';
+import { Chapter } from '@/types/pdf';
+import { PDFViewer } from '@/features/pdf/PDFViewer';
+import { PDFStructure } from '@/features/sources/PDFStructure';
 
 export function Body() {
-  const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
-  const [isStudioCollapsed, setIsStudioCollapsed] = useState(false);
   const sourcesRef = useRef<ImperativePanelHandle>(null);
   const studioRef = useRef<ImperativePanelHandle>(null);
+  const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
+  const [isStudioCollapsed, setIsStudioCollapsed] = useState(false);
+  const [selectedPDF, setSelectedPDF] = useState<{ 
+    file: File; 
+    structure: { 
+      filename: string; 
+      total_pages: number; 
+      chapters: Chapter[]; 
+    }; 
+  } | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
 
   const handleSourcesCollapse = () => {
     if (!isSourcesCollapsed) {
@@ -31,6 +42,17 @@ export function Body() {
     setIsStudioCollapsed(!isStudioCollapsed);
   };
 
+  const handlePDFStructure = (file: File | null, structure: { filename: string; total_pages: number; chapters: Chapter[] } | null) => {
+    setSelectedPDF(file && structure ? { file, structure } : null);
+    setSelectedChapter(null);
+  };
+
+  const handleChapterSelect = (chapter: Chapter) => {
+    setSelectedChapter(chapter);
+    const viewer = document.getElementById('pdf-content-viewer');
+    viewer?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-900 text-gray-100">
       <PanelGroup direction="horizontal" className="w-full">
@@ -45,10 +67,21 @@ export function Body() {
             isCollapsed={isSourcesCollapsed}
             direction="right"
           >
-            <Sources 
-              onCollapse={handleSourcesCollapse} 
-              isCollapsed={isSourcesCollapsed} 
-            />
+            <div className="flex flex-col h-full">
+              <Sources 
+                onCollapse={handleSourcesCollapse} 
+                isCollapsed={isSourcesCollapsed}
+                onPDFStructure={handlePDFStructure}
+              />
+              {selectedPDF && (
+                <div className="mt-4 flex-1 min-h-0">
+                  <PDFStructure 
+                    structure={selectedPDF.structure}
+                    onChapterSelect={handleChapterSelect}
+                  />
+                </div>
+              )}
+            </div>
           </CollapsiblePanel>
         </Panel>
 
@@ -74,10 +107,15 @@ export function Body() {
             isCollapsed={isStudioCollapsed}
             direction="left"
           >
-            <Studio 
-              onCollapse={handleStudioCollapse} 
-              isCollapsed={isStudioCollapsed} 
-            />
+            {selectedPDF && selectedChapter && (
+              <div id="pdf-content-viewer">
+                <PDFViewer 
+                  pdfFile={selectedPDF.file}
+                  pdfStructure={selectedPDF.structure}
+                  selectedChapter={selectedChapter}
+                />
+              </div>
+            )}
           </CollapsiblePanel>
         </Panel>
       </PanelGroup>

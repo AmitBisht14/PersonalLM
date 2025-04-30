@@ -14,7 +14,7 @@ class BasePDFService:
         return temp_file_path
 
     @staticmethod
-    def cleanup_temp_file(temp_file_path: str) -> None:
+    async def cleanup_temp_file(temp_file_path: str) -> None:
         """
         Clean up temporary file
         """

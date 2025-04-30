@@ -108,7 +108,7 @@ export function Body() {
             direction="left"
           >
             {selectedPDF && selectedChapter && (
-              <div id="pdf-content-viewer">
+              <div id="pdf-content-viewer" className="h-full overflow-hidden">
                 <PDFViewer 
                   pdfFile={selectedPDF.file}
                   pdfStructure={selectedPDF.structure}

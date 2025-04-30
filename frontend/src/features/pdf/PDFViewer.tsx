@@ -68,26 +68,28 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
   }, [selectedChapter, pdfFile]);
 
   return (
-    <div className="h-full flex flex-col p-4 text-sm overflow-hidden min-h-0">
-      <div className="mb-4">
+    <div className="h-full flex flex-col">
+      <div className="p-4 flex-shrink-0 bg-gray-900">
         <h2 className="text-lg font-semibold text-white">{pdfStructure.filename}</h2>
         <div className="text-blue-300 text-sm mt-1">
           Chapter: {selectedChapter.title}
         </div>
       </div>
-      <div className="flex-1 min-h-0 bg-gray-800 rounded-lg p-4 overflow-y-auto">
-        {loading && <div className="text-blue-300">Loading content...</div>}
-        {error && <div className="text-red-300">{error}</div>}
-        {content && !loading && !error && (
-          <div className="space-y-8">
-            {content.pages.map((page) => (
-              <div key={page.page_number}>
-                <h3 className="text-blue-300 font-semibold mb-2">Page {page.page_number}</h3>
-                <div className="whitespace-pre-wrap text-gray-100">{page.text}</div>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        <div className="p-4 bg-gray-800">
+          {loading && <div className="text-blue-300">Loading content...</div>}
+          {error && <div className="text-red-300">{error}</div>}
+          {content && !loading && !error && (
+            <div className="space-y-8">
+              {content.pages.map((page) => (
+                <div key={page.page_number} className="pb-8 border-b border-gray-700 last:border-0">
+                  <h3 className="text-blue-300 font-semibold mb-2">Page {page.page_number}</h3>
+                  <div className="whitespace-pre-wrap text-gray-100">{page.text}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

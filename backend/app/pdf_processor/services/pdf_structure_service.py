@@ -38,6 +38,8 @@ class PDFStructureService(BasePDFService):
                             # Set end page of previous chapter
                             current_chapter.end_page = page - 1
                             current_chapter.length = current_chapter.end_page - current_chapter.start_page + 1
+                            # Add sections to the current chapter before appending
+                            current_chapter.sections = current_sections.copy()
                             chapters.append(current_chapter)
                         
                         current_chapter = Chapter(
@@ -47,6 +49,7 @@ class PDFStructureService(BasePDFService):
                             length=0,
                             sections=[]
                         )
+                        # Reset sections for new chapter
                         current_sections = []
                     elif level == 2 and current_chapter:  # Section
                         current_sections.append(Section(
@@ -58,7 +61,8 @@ class PDFStructureService(BasePDFService):
                     # Handle the last chapter
                     current_chapter.end_page = total_pages
                     current_chapter.length = current_chapter.end_page - current_chapter.start_page + 1
-                    current_chapter.sections = current_sections
+                    # Add sections to the last chapter
+                    current_chapter.sections = current_sections.copy()
                     chapters.append(current_chapter)
             else:
                 logger.info("No table of contents found, analyzing content")

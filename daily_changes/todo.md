@@ -6,7 +6,8 @@
 - On right side we will have an option to edit the prompt.
 - We will have an option to add new prompt.
 - We will have an option to delete the prompt.
-- Identify where we can store the prompt.
+- ✅ Identify where we can store the prompt. (Completed on 02/05/2025)
+- ✅ Create backend API for managing prompts. (Completed on 02/05/2025)
 
 ### Option to generate content based on above configured prompt
 - We will have an option to generate content based on above configured prompt.
@@ -14,4 +15,13 @@
 - This generated content will be shown in the centre of the screen.
 
 --
+## 02/05/2025
+- ✅ Created backend API for managing prompts with the following endpoints:
+  - POST `/api/v1/prompts` - Create or update a prompt
+  - GET `/api/v1/prompts/{name}` - Retrieve a specific prompt by name
+  - GET `/api/v1/prompts` - List all available prompts
+- ✅ Implemented storage for prompts as a JSON array in a single file
+- ✅ Added validation for prompt names and content
+
 ## 01/05/2025
+- We will have an option to generate content based on above configured prompt.

@@ -1,0 +1,22 @@
+[
+  {
+    "name": "test1",
+    "prompt": "This is test prompt 1"
+  },
+  {
+    "name": "test2",
+    "prompt": "This is test prompt 2"
+  },
+  {
+    "name": "string",
+    "prompt": "string"
+  },
+  {
+    "name": "stri123ng",
+    "prompt": "stri123123123ng"
+  },
+  {
+    "name": "array-test",
+    "prompt": "This is a test for array storage"
+  }
+]

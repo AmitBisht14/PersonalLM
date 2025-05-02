@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.routers import chat, prompts
+from app.routers import chat
 from app.pdf_processor.routers import pdf_router
+from app.configuration.routers import config_router
 from app.core.config import get_settings
 from app.models.responses import ErrorResponse
 
@@ -25,7 +26,7 @@ app.add_middleware(
 # Include routers
 app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
 app.include_router(pdf_router.router)
-app.include_router(prompts.router)
+app.include_router(config_router.router)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

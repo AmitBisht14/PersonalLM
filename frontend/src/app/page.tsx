@@ -1,13 +1,7 @@
 'use client';
 
-import { Header } from '@/components/layout/Header';
-import { Body } from '@/components/layout/Body';
+import { redirect } from 'next/navigation';
 
-export default function Home() {
-  return (
-    <main>
-      <Header />
-      <Body />
-    </main>
-  );
+export default function RootPage() {
+  redirect('/home');
 }

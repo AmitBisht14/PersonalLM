@@ -1,13 +1,13 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Panel, PanelGroup, PanelResizeHandle, ImperativePanelHandle } from 'react-resizable-panels';
+import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Sources } from '@/features/sources/Sources';
 import { Chat } from '@/features/chat/Chat';
-import { CollapsiblePanel } from '@/components/ui/panels/CollapsiblePanel';
 import { Chapter } from '@/types/pdf';
 import { PDFViewer } from '@/features/pdf/PDFViewer';
 import { PDFStructure } from '@/features/sources/PDFStructure';
+import { PanelLayout } from './PanelLayout';
 
 export function Body() {
   const sourcesRef = useRef<ImperativePanelHandle>(null);
@@ -55,18 +55,16 @@ export function Body() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-900 text-gray-100">
-      <PanelGroup direction="horizontal" className="w-full">
-        <Panel 
-          ref={sourcesRef}
-          defaultSize={25} 
-          minSize={0} 
-          maxSize={40}
-        >
-          <CollapsiblePanel
-            onCollapse={handleSourcesCollapse}
-            isCollapsed={isSourcesCollapsed}
-            direction="right"
-          >
+      <PanelLayout
+        leftPanel={{
+          ref: sourcesRef,
+          defaultSize: 25,
+          minSize: 0,
+          maxSize: 40,
+          isCollapsed: isSourcesCollapsed,
+          onCollapse: handleSourcesCollapse,
+          collapseDirection: 'right',
+          children: (
             <div className="flex flex-col h-full">
               <Sources 
                 onCollapse={handleSourcesCollapse} 
@@ -82,43 +80,32 @@ export function Body() {
                 </div>
               )}
             </div>
-          </CollapsiblePanel>
-        </Panel>
-
-        <PanelResizeHandle className="w-1 hover:w-2 bg-gray-700 transition-all" />
-
-        <Panel 
-          defaultSize={50} 
-          minSize={20}
-        >
-          <Chat />
-        </Panel>
-
-        <PanelResizeHandle className="w-1 hover:w-2 bg-gray-700 transition-all" />
-
-        <Panel 
-          ref={studioRef}
-          defaultSize={25} 
-          minSize={0} 
-          maxSize={40}
-        >
-          <CollapsiblePanel
-            onCollapse={handleStudioCollapse}
-            isCollapsed={isStudioCollapsed}
-            direction="left"
-          >
-            {selectedPDF && selectedChapter && (
-              <div id="pdf-content-viewer" className="h-full overflow-hidden">
-                <PDFViewer 
-                  pdfFile={selectedPDF.file}
-                  pdfStructure={selectedPDF.structure}
-                  selectedChapter={selectedChapter}
-                />
-              </div>
-            )}
-          </CollapsiblePanel>
-        </Panel>
-      </PanelGroup>
+          )
+        }}
+        centerPanel={{
+          defaultSize: 50,
+          minSize: 20,
+          children: <Chat />
+        }}
+        rightPanel={{
+          ref: studioRef,
+          defaultSize: 25,
+          minSize: 0,
+          maxSize: 40,
+          isCollapsed: isStudioCollapsed,
+          onCollapse: handleStudioCollapse,
+          collapseDirection: 'left',
+          children: selectedPDF && selectedChapter ? (
+            <div id="pdf-content-viewer" className="h-full overflow-hidden">
+              <PDFViewer 
+                pdfFile={selectedPDF.file}
+                pdfStructure={selectedPDF.structure}
+                selectedChapter={selectedChapter}
+              />
+            </div>
+          ) : null
+        }}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 [
   {
     "name": "Summary",
-    "prompt": "Follow below instructions to provide summary of the text:\n\nChapter Summary: A concise but detailed summary in 300–500 words.\r\nKey Ideas & Arguments: List the major arguments or claims made by the author in this chapter. Explain each in 2–3 sentences.\r\nPhilosophical or Ethical Questions Raised: Identify any deeper questions or reflections raised in the chapter, either explicitly or implicitly.\r\nAuthor’s Tone and Perspective: Analyze the author’s tone, stance, or narrative voice. Is it skeptical, optimistic, ironic, authoritative?\r\nImpact and Implications: What does the author want the reader to think or do as a result of this chapter? Discuss the broader implications."
+    "prompt": "You are an expert academic summarizer.\nPlease read the following chapter text and respond using these exact section headers:\n\n1. Chapter Summary (300–500 words)\n\n2. Key Ideas & Arguments\n- Idea A: (2–3 sentences)\n- Idea B: (2–3 sentences)\n\n3. Philosophical or Ethical Questions Raised\n- Question A: …\n\n4. Author’s Tone and Perspective\n…\n\n5. Impact and Implications\n…\n\nEnd of instructions."
   }
 ]

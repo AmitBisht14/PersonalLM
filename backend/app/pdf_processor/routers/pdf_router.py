@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from ..services.pdf_info_service import PDFInfoService
 from ..services.pdf_structure_service import PDFStructureService
 from ..services.pdf_content_service import PDFContentService
-from ..models.pdf_models import PDFInfo, PDFStructure, PDFContent
+from ..models.pdf_models import PDFInfo, PDFStructure, PDFContent, PDFRawContent
 
 router = APIRouter(
     prefix="/pdf",
@@ -70,4 +70,32 @@ async def get_pdf_content(
     
     pdf_service = PDFContentService()
     content = await pdf_service.extract_content(file, start_page, end_page)
+    return content
+
+@router.post("/content-raw", response_model=PDFRawContent)
+async def get_pdf_raw_content(
+    file: UploadFile = File(...),
+    start_page: int = Query(1, description="Start page number (1-based indexing)"),
+    end_page: int = Query(None, description="End page number (inclusive). If not provided, only start_page will be processed")
+) -> PDFRawContent:
+    """
+    Extract raw text content from a PDF file for the specified page range.
+    Returns combined text content without page separation.
+    
+    Args:
+        file: The PDF file to process
+        start_page: Start page number (1-based indexing)
+        end_page: End page number (inclusive). If not provided, only start_page will be processed
+        
+    Returns:
+        PDFRawContent containing the combined text from all pages in the range
+    """
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+    
+    if end_page is None:
+        end_page = start_page
+    
+    pdf_service = PDFContentService()
+    content = await pdf_service.extract_raw_content(file, start_page, end_page)
     return content

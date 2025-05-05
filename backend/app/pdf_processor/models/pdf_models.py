@@ -33,3 +33,10 @@ class PDFContent(BaseModel):
     end_page: int
     total_pages: int
     pages: List[PDFPageContent]
+
+class PDFRawContent(BaseModel):
+    filename: str
+    start_page: int
+    end_page: int
+    total_pages: int
+    text: str

@@ -23,9 +23,10 @@ interface PDFViewerProps {
     chapters: Chapter[];
   };
   selectedChapter: Chapter;
+  onSummaryGenerated: (summary: string) => void;
 }
 
-export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerProps) {
+export function PDFViewer({ pdfFile, pdfStructure, selectedChapter, onSummaryGenerated }: PDFViewerProps) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<PDFContent | null>(null);
   const [rawContent, setRawContent] = useState<string | null>(null);
@@ -70,11 +71,11 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
       const { prompt } = await fetchSummaryPrompt();
       if (rawContent) {
         const summary = await generateSummary(rawContent, prompt);
-        alert(summary);
+        onSummaryGenerated(summary);
       }
     } catch (err: any) {
       console.error('Error generating summary:', err);
-      alert('Error generating summary: ' + (err.message || 'Unknown error'));
+      setError('Error generating summary: ' + (err.message || 'Unknown error'));
     } finally {
       setSummaryLoading(false);
     }

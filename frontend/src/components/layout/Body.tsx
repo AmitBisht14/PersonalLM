@@ -14,6 +14,7 @@ export function Body() {
   const studioRef = useRef<ImperativePanelHandle>(null);
   const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
   const [isStudioCollapsed, setIsStudioCollapsed] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
   const [selectedPDF, setSelectedPDF] = useState<{ 
     file: File; 
     structure: { 
@@ -45,12 +46,16 @@ export function Body() {
   const handlePDFStructure = (file: File | null, structure: { filename: string; total_pages: number; chapters: Chapter[] } | null) => {
     setSelectedPDF(file && structure ? { file, structure } : null);
     setSelectedChapter(null);
+    setSummary(null);
   };
 
   const handleChapterSelect = (chapter: Chapter) => {
     setSelectedChapter(chapter);
-    const viewer = document.getElementById('pdf-content-viewer');
-    viewer?.scrollIntoView({ behavior: 'smooth' });
+    setSummary(null);
+  };
+
+  const handleSummaryGenerated = (newSummary: string) => {
+    setSummary(newSummary);
   };
 
   return (
@@ -85,7 +90,7 @@ export function Body() {
         centerPanel={{
           defaultSize: 50,
           minSize: 20,
-          children: <Chat />
+          children: <Chat summary={summary} />
         }}
         rightPanel={{
           ref: studioRef,
@@ -101,6 +106,7 @@ export function Body() {
                 pdfFile={selectedPDF.file}
                 pdfStructure={selectedPDF.structure}
                 selectedChapter={selectedChapter}
+                onSummaryGenerated={handleSummaryGenerated}
               />
             </div>
           ) : null

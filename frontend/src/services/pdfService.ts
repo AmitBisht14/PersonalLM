@@ -7,21 +7,37 @@ export const fetchPDFContent = async (
   file: File,
   startPage: number,
   endPage: number
-): Promise<PDFContent> => {
+): Promise<{ content: PDFContent; rawContent: string }> => {
   const formData = new FormData();
   formData.append('file', file);
 
   try {
-    const response = await axios.post(
-      `${API_BASE_URL}/pdf/content?start_page=${startPage}&end_page=${endPage}`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    return response.data;
+    // Make both requests simultaneously
+    const [contentResponse, rawContentResponse] = await Promise.all([
+      axios.post(
+        `${API_BASE_URL}/pdf/content?start_page=${startPage}&end_page=${endPage}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      ),
+      axios.post(
+        `${API_BASE_URL}/pdf/content-raw?start_page=${startPage}&end_page=${endPage}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+    ]);
+
+    return {
+      content: contentResponse.data,
+      rawContent: rawContentResponse.data.text
+    };
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;

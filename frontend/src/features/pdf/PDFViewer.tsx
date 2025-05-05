@@ -28,12 +28,14 @@ interface PDFViewerProps {
 export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerProps) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<PDFContent | null>(null);
+  const [rawContent, setRawContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     // Reset state when PDF file changes
     setContent(null);
+    setRawContent(null);
     setError(null);
   }, [pdfFile]);
 
@@ -43,13 +45,14 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchPDFContent(
+        const { content: formattedContent, rawContent: rawText } = await fetchPDFContent(
           pdfFile, 
           selectedChapter.start_page, 
           selectedChapter.end_page || selectedChapter.start_page
         );
-        console.log('Received content:', data);
-        setContent(data);
+        console.log('Received content:', formattedContent);
+        setContent(formattedContent);
+        setRawContent(rawText);
       } catch (err: any) {
         console.error('Error loading content:', err);
         setError(err.message || 'Error fetching PDF content');
@@ -65,9 +68,8 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
     setSummaryLoading(true);
     try {
       const { prompt } = await fetchSummaryPrompt();
-      if (content) {
-        const text = content.pages.map(page => page.text).join('\n\n');
-        const summary = await generateSummary(text, prompt);
+      if (rawContent) {
+        const summary = await generateSummary(rawContent, prompt);
         alert(summary);
       }
     } catch (err: any) {
@@ -85,7 +87,7 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
           onClick={handleGenerateSummary}
-          disabled={summaryLoading || !content}
+          disabled={summaryLoading || !rawContent}
         >
           {summaryLoading ? 'Loading...' : 'Generate Summary'}
         </button>

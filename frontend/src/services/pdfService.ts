@@ -30,3 +30,32 @@ export const fetchPDFContent = async (
     throw error;
   }
 };
+
+export const fetchSummaryPrompt = async (): Promise<{ prompt: string }> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/v1/prompts/Summary`);
+    return response.data;
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.detail || error.message;
+      throw new Error(`Failed to fetch summary prompt: ${message}`);
+    }
+    throw error;
+  }
+};
+
+export const generateSummary = async (text: string, prompt: string): Promise<string> => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/api/v1/summary`, {
+      text,
+      prompt
+    });
+    return response.data.summary;
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.detail || error.message;
+      throw new Error(`Failed to generate summary: ${message}`);
+    }
+    throw error;
+  }
+};

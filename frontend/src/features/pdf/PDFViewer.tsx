@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Chapter } from '@/types/pdf';
+import { fetchPDFContent, fetchSummaryPrompt, generateSummary } from '@/services/pdfService';
 
 interface PDFContent {
   filename: string;
@@ -42,19 +43,11 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
       setLoading(true);
       setError(null);
       try {
-        const formData = new FormData();
-        formData.append('file', pdfFile);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pdf/content?start_page=${selectedChapter.start_page}&end_page=${selectedChapter.end_page || selectedChapter.start_page}`,
-          {
-            method: 'POST',
-            body: formData,
-          }
+        const data = await fetchPDFContent(
+          pdfFile, 
+          selectedChapter.start_page, 
+          selectedChapter.end_page || selectedChapter.start_page
         );
-        if (!res.ok) {
-          throw new Error('Failed to fetch PDF content');
-        }
-        const data = await res.json();
         console.log('Received content:', data);
         setContent(data);
       } catch (err: any) {
@@ -71,17 +64,15 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
   const handleGenerateSummary = async () => {
     setSummaryLoading(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/prompts/Summary`
-      );
-      if (!res.ok) {
-        throw new Error('Failed to fetch summary prompt');
+      const { prompt } = await fetchSummaryPrompt();
+      if (content) {
+        const text = content.pages.map(page => page.text).join('\n\n');
+        const summary = await generateSummary(text, prompt);
+        alert(summary);
       }
-      const data = await res.json();
-      alert(data.prompt);
     } catch (err: any) {
-      console.error('Error fetching summary prompt:', err);
-      alert('Error fetching summary prompt: ' + (err.message || 'Unknown error'));
+      console.error('Error generating summary:', err);
+      alert('Error generating summary: ' + (err.message || 'Unknown error'));
     } finally {
       setSummaryLoading(false);
     }
@@ -94,7 +85,7 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
           onClick={handleGenerateSummary}
-          disabled={summaryLoading}
+          disabled={summaryLoading || !content}
         >
           {summaryLoading ? 'Loading...' : 'Generate Summary'}
         </button>

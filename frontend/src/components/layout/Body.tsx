@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { Sources } from '@/features/sources/Sources';
-import { Chat } from '@/features/chat/Chat';
+import { Summary } from '@/features/summary/Summary';
 import { Chapter } from '@/types/pdf';
 import { PDFViewer } from '@/features/pdf/PDFViewer';
 import { PDFStructure } from '@/features/sources/PDFStructure';
@@ -90,7 +90,7 @@ export function Body() {
         centerPanel={{
           defaultSize: 50,
           minSize: 20,
-          children: <Chat summary={summary} />
+          children: <Summary summary={summary} />
         }}
         rightPanel={{
           ref: studioRef,

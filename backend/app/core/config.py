@@ -4,9 +4,9 @@ from functools import lru_cache
 class Settings(BaseSettings):
     app_name: str = "PersonalLM API"
     openai_api_key: str
-    default_model: str = "gpt-4"  # Fixed typo in model name
+    default_model: str = "gpt-4.1-mini"  # Fixed typo in model name
     max_tokens: int = 4096
-    temperature: float = 0.7
+    temperature: float = 0.1
     frontend_url: str = "http://localhost:3000"
 
     class Config:

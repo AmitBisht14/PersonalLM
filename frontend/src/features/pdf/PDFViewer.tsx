@@ -28,6 +28,7 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<PDFContent | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     // Reset state when PDF file changes
@@ -67,10 +68,36 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerP
     loadChapterContent();
   }, [selectedChapter, pdfFile]);
 
+  const handleGenerateSummary = async () => {
+    setSummaryLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/prompts/Summary`
+      );
+      if (!res.ok) {
+        throw new Error('Failed to fetch summary prompt');
+      }
+      const data = await res.json();
+      alert(data.prompt);
+    } catch (err: any) {
+      console.error('Error fetching summary prompt:', err);
+      alert('Error fetching summary prompt: ' + (err.message || 'Unknown error'));
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 flex-shrink-0 bg-gray-900">
-        Chapter: {selectedChapter.title}
+      <div className="p-4 flex-shrink-0 bg-gray-900 space-y-4">
+        <div>Chapter: {selectedChapter.title}</div>
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
+          onClick={handleGenerateSummary}
+          disabled={summaryLoading}
+        >
+          {summaryLoading ? 'Loading...' : 'Generate Summary'}
+        </button>
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
         <div className="p-4 bg-gray-800">

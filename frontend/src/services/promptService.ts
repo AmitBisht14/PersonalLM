@@ -1,6 +1,7 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface Prompt {
+  id: string;
   name: string;
   prompt: string;
 }
@@ -55,13 +56,52 @@ export async function createPrompt(name: string, prompt: string): Promise<Prompt
   }
 }
 
-// Additional functions for future implementation
-export async function updatePrompt(name: string, prompt: string): Promise<Prompt | null> {
-  // Implementation will be similar to createPrompt
-  return null;
+export async function updatePrompt(id: string, name: string, prompt: string): Promise<Prompt | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/prompts/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      credentials: 'include',
+      body: JSON.stringify({ name, prompt }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to update prompt');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error updating prompt:', error);
+    return null;
+  }
 }
 
-export async function deletePrompt(name: string): Promise<boolean> {
-  // Implementation for deleting a prompt
-  return false;
+export async function deletePrompt(id: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/prompts/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to delete prompt');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting prompt:', error);
+    return false;
+  }
 }

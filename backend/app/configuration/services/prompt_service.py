@@ -55,22 +55,30 @@ class PromptService:
                 detail=f"Failed to save prompts file: {str(e)}"
             )
     
-    def create_or_update_prompt(self, name: str, prompt: str) -> Dict[str, str]:
+    def create_or_update_prompt(self, name: str, prompt: str, prompt_id: str = None) -> Dict[str, str]:
         """Create a new prompt or update an existing one"""
         prompts = self.load_prompts()
         
         # Check if prompt already exists
         is_update = False
         for i, p in enumerate(prompts):
-            if p.name == name:
-                # Update existing prompt
-                prompts[i] = PromptItem(name=name, prompt=prompt)
+            if prompt_id and p.id == prompt_id:
+                # Update existing prompt by ID
+                prompts[i] = PromptItem(id=p.id, name=name, prompt=prompt)
+                is_update = True
+                break
+            elif not prompt_id and p.name == name:
+                # Update existing prompt by name (legacy support)
+                prompts[i] = PromptItem(id=p.id, name=name, prompt=prompt)
                 is_update = True
                 break
         
         # If not an update, add new prompt
         if not is_update:
-            prompts.append(PromptItem(name=name, prompt=prompt))
+            new_prompt = PromptItem(name=name, prompt=prompt)
+            if prompt_id:
+                new_prompt.id = prompt_id
+            prompts.append(new_prompt)
         
         # Save all prompts back to the file
         self.save_prompts(prompts)
@@ -81,21 +89,67 @@ class PromptService:
         else:
             return {"status": "success", "message": f"Prompt '{name}' created successfully"}
     
-    def get_prompt(self, name: str) -> PromptItem:
-        """Retrieve a prompt by name"""
+    def get_prompt(self, name: str = None, prompt_id: str = None) -> PromptItem:
+        """Retrieve a prompt by name or ID"""
         prompts = self.load_prompts()
         
-        # Find prompt by name
+        # Find prompt by ID (preferred) or name
         for prompt in prompts:
-            if prompt.name == name:
+            if prompt_id and prompt.id == prompt_id:
+                return prompt
+            elif name and prompt.name == name and not prompt_id:
                 return prompt
         
         # If not found, return 404
+        error_detail = f"Prompt not found"
+        if name:
+            error_detail = f"Prompt '{name}' not found"
+        elif prompt_id:
+            error_detail = f"Prompt with ID '{prompt_id}' not found"
+            
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Prompt '{name}' not found"
+            detail=error_detail
         )
     
     def list_prompts(self) -> List[PromptItem]:
         """List all available prompts"""
         return self.load_prompts()
+        
+    def update_prompt(self, prompt_id: str, name: str, prompt: str) -> Dict[str, str]:
+        """Update an existing prompt by ID"""
+        prompts = self.load_prompts()
+        
+        # Find prompt by ID
+        for i, p in enumerate(prompts):
+            if p.id == prompt_id:
+                # Update existing prompt
+                prompts[i] = PromptItem(id=prompt_id, name=name, prompt=prompt)
+                self.save_prompts(prompts)
+                return {"status": "success", "message": f"Prompt '{name}' updated successfully"}
+        
+        # If not found, return 404
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Prompt with ID '{prompt_id}' not found"
+        )
+    
+    def delete_prompt(self, prompt_id: str) -> Dict[str, str]:
+        """Delete a prompt by ID"""
+        prompts = self.load_prompts()
+        
+        # Find prompt by ID
+        for i, p in enumerate(prompts):
+            if p.id == prompt_id:
+                # Get the name for the response message
+                name = p.name
+                # Remove the prompt
+                prompts.pop(i)
+                self.save_prompts(prompts)
+                return {"status": "success", "message": f"Prompt '{name}' deleted successfully"}
+        
+        # If not found, return 404
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Prompt with ID '{prompt_id}' not found"
+        )

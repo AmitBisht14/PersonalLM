@@ -1,9 +1,11 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator, Field
 import re
+import uuid
 
 class PromptRequest(BaseModel):
     name: str
     prompt: str
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     
     @validator('name')
     def validate_name(cls, v):
@@ -27,5 +29,6 @@ class PromptRequest(BaseModel):
         return v
 
 class PromptItem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     prompt: str

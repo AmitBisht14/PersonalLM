@@ -1,22 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { createPrompt, Prompt } from '@/services/promptService';
+import { createPrompt, updatePrompt, Prompt } from '@/services/promptService';
 
 interface AddPromptModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPromptAdded: (prompt: Prompt) => void;
+  onPromptUpdated?: (prompt: Prompt) => void;
+  editMode?: boolean;
+  promptToEdit?: Prompt | null;
 }
 
-export function AddPromptModal({ isOpen, onClose, onPromptAdded }: AddPromptModalProps) {
+export function AddPromptModal({ 
+  isOpen, 
+  onClose, 
+  onPromptAdded, 
+  onPromptUpdated, 
+  editMode = false,
+  promptToEdit = null 
+}: AddPromptModalProps) {
   const [newPromptName, setNewPromptName] = useState('');
   const [newPromptContent, setNewPromptContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleAddNewPrompt = async () => {
+  // Load prompt data when editing
+  useEffect(() => {
+    if (editMode && promptToEdit) {
+      setNewPromptName(promptToEdit.name);
+      setNewPromptContent(promptToEdit.prompt);
+    } else if (!editMode) {
+      // Reset form when opening in add mode
+      setNewPromptName('');
+      setNewPromptContent('');
+    }
+  }, [editMode, promptToEdit, isOpen]);
+
+  const handleSavePrompt = async () => {
     if (!newPromptName.trim() || !newPromptContent.trim()) {
       setSubmitError('Name and prompt content are required');
       return;
@@ -26,16 +48,35 @@ export function AddPromptModal({ isOpen, onClose, onPromptAdded }: AddPromptModa
     setSubmitError(null);
 
     try {
-      const result = await createPrompt(newPromptName, newPromptContent);
-      if (result) {
-        // Notify parent component about the new prompt
-        onPromptAdded({ name: newPromptName, prompt: newPromptContent });
-        // Reset form
-        setNewPromptName('');
-        setNewPromptContent('');
-        onClose();
+      if (editMode && promptToEdit) {
+        // Update existing prompt
+        const result = await updatePrompt(promptToEdit.id, newPromptName, newPromptContent);
+        if (result) {
+          // Notify parent component about the updated prompt
+          if (onPromptUpdated) {
+            onPromptUpdated({
+              id: promptToEdit.id,
+              name: newPromptName,
+              prompt: newPromptContent
+            });
+          }
+          onClose();
+        } else {
+          setSubmitError('Failed to update prompt');
+        }
       } else {
-        setSubmitError('Failed to create prompt');
+        // Create new prompt
+        const result = await createPrompt(newPromptName, newPromptContent);
+        if (result) {
+          // Notify parent component about the new prompt
+          onPromptAdded(result);
+          // Reset form
+          setNewPromptName('');
+          setNewPromptContent('');
+          onClose();
+        } else {
+          setSubmitError('Failed to create prompt');
+        }
       }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -50,7 +91,7 @@ export function AddPromptModal({ isOpen, onClose, onPromptAdded }: AddPromptModa
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-gray-800 rounded-lg p-6 w-full max-w-xl mx-4">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Add New Prompt</h3>
+          <h3 className="text-lg font-semibold">{editMode ? 'Edit Prompt' : 'Add New Prompt'}</h3>
           <button 
             onClick={onClose}
             className="p-1 hover:bg-gray-700 rounded-full"
@@ -101,11 +142,11 @@ export function AddPromptModal({ isOpen, onClose, onPromptAdded }: AddPromptModa
               Cancel
             </button>
             <button
-              onClick={handleAddNewPrompt}
+              onClick={handleSavePrompt}
               disabled={isSubmitting}
               className={`px-4 py-2 bg-blue-500 text-white rounded text-sm flex items-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-blue-600'} transition-colors`}
             >
-              {isSubmitting ? 'Saving...' : 'Save Prompt'}
+              {isSubmitting ? 'Saving...' : (editMode ? 'Update Prompt' : 'Save Prompt')}
             </button>
           </div>
         </div>

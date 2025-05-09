@@ -7,7 +7,7 @@ interface PromptItemProps {
   prompt: Prompt;
   onCopy: (prompt: string) => void;
   onEdit: (prompt: Prompt) => void;
-  onDelete: (promptName: string) => void;
+  onDelete: (promptId: string, promptName: string) => void;
 }
 
 export function PromptItem({ prompt, onCopy, onEdit, onDelete }: PromptItemProps) {
@@ -31,7 +31,7 @@ export function PromptItem({ prompt, onCopy, onEdit, onDelete }: PromptItemProps
             <Pencil className="w-4 h-4 text-gray-400 hover:text-white" />
           </button>
           <button 
-            onClick={() => onDelete(prompt.name)}
+            onClick={() => onDelete(prompt.id, prompt.name)}
             className="p-1 hover:bg-gray-600 rounded"
             title="Delete prompt"
           >

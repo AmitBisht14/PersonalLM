@@ -1,6 +1,14 @@
 [
   {
-    "name": "Summary",
-    "prompt": "You are an expert academic summarizer.\nPlease read the following chapter text and respond using these exact section headers:\n\n1. Chapter Summary (300–500 words)\n\n2. Key Ideas & Arguments\n- Idea A: (2–3 sentences)\n- Idea B: (2–3 sentences)\n\n3. Philosophical or Ethical Questions Raised\n- Question A: …\n\n4. Author’s Tone and Perspective\n…\n\n5. Impact and Implications\n…\n\nEnd of instructions. \nDisplay GPT model and cost of execution used at the bottom"
+    "name": "Generate Summary",
+    "prompt": "You are an expert academic summarizer.\nPlease read the following chapter text and respond using these exact section headers:\n\n1. Chapter Summary (300\u2013500 words)\n\n2. Key Ideas & Arguments\n- Idea A: (2\u20133 sentences)\n- Idea B: (2\u20133 sentences)\n\n3. Philosophical or Ethical Questions Raised\n- Question A: \u2026\n\n4. Author\u2019s Tone and Perspective\n\u2026\n\n5. Impact and Implications\n\u2026\n\nEnd of instructions. \nDisplay GPT model and cost of execution used at the bottom"
+  },
+  {
+    "name": "New Test Prompt",
+    "prompt": "This is a test prompt"
+  },
+  {
+    "name": "New rRewar peompor 1",
+    "prompt": "asdkjaleiq9o qodkasmd poasm alpoaisdop amcak "
   }
 ]

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ConfigurationSettings } from './components/ConfigurationSettings';
+import { PromptList } from './components/PromptList';
 import { ConfigurationList } from './components/ConfigurationList';
 import { ConfigurationActions } from './components/ConfigurationActions';
 import { PanelLayout } from '@/components/layout/PanelLayout';
@@ -36,8 +36,8 @@ export function Configuration() {
               isCollapsed: isSettingsCollapsed,
               onCollapse: handleSettingsCollapse,
               collapseDirection: 'right',
-              title: 'Global Settings',
-              children: <ConfigurationSettings onSettingChange={handleSettingChange} />
+              title: 'Prompt List',
+              children: <PromptList onSettingChange={handleSettingChange} />
             }}
             centerPanel={{
               defaultSize: 50,

@@ -1,4 +1,4 @@
-import fitz
+import fitz  # PyMuPDF's fitz module
 from fastapi import UploadFile
 from ..models.pdf_models import PDFInfo
 from .base_pdf_service import BasePDFService

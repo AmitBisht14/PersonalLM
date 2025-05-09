@@ -1,6 +1,6 @@
 'use client';
 
-import { Body } from '@/components/layout/Body';
+import { Body } from '@/features/home/Home';
 
 export default function Home() {
   return <Body />;

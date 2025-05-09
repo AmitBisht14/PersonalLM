@@ -67,11 +67,26 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter, onSummaryGen
 
   const handleGenerateSummary = async () => {
     setSummaryLoading(true);
+    setError(null); // Clear any previous errors
+    
     try {
-      const { prompt } = await fetchSummaryPrompt();
+      // Step 1: Fetch the summary prompt
+      const promptResult = await fetchSummaryPrompt();
+      
+      if (!promptResult || !promptResult.prompt) {
+        throw new Error('Could not retrieve summary prompt template');
+      }
+      
+      // Step 2: Generate the summary if we have content
       if (rawContent) {
-        const summary = await generateSummary(rawContent, prompt);
-        onSummaryGenerated(summary);
+        const summary = await generateSummary(rawContent, promptResult.prompt);
+        if (summary) {
+          onSummaryGenerated(summary);
+        } else {
+          throw new Error('Received empty summary from API');
+        }
+      } else {
+        throw new Error('No content available to summarize');
       }
     } catch (err: any) {
       console.error('Error generating summary:', err);

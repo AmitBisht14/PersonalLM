@@ -49,8 +49,18 @@ export const fetchPDFContent = async (
 
 export const fetchSummaryPrompt = async (): Promise<{ prompt: string }> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/v1/prompts/Summary`);
-    return response.data;
+    // First try to get all prompts
+    const response = await axios.get(`${API_BASE_URL}/api/v1/prompts`);
+    
+    // Find the prompt with name "Generate Summary"
+    const summaryPrompt = response.data.find((p: any) => p.name === "Generate Summary");
+    
+    if (!summaryPrompt) {
+      throw new Error("Summary prompt not found");
+    }
+    
+    // Return the prompt content
+    return { prompt: summaryPrompt.prompt };
   } catch (error: any) {
     if (axios.isAxiosError(error)) {
       const message = error.response?.data?.detail || error.message;

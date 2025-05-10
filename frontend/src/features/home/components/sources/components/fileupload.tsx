@@ -30,7 +30,6 @@ export function PDFSource({ onFileSelect, onFileRemove, loading, toast, onToastC
         <FileUpload
           onFileSelect={handleSelect}
           onFileRemove={handleRemove}
-          maxSize={10}
         />
       ) : (
         <div className="flex items-center gap-3 bg-gray-800 rounded p-3 mt-2">

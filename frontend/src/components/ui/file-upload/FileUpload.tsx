@@ -14,7 +14,7 @@ export function FileUpload({
   onFileSelect,
   onFileRemove,
   accept = '.pdf',
-  maxSize = 10, // Default 10MB
+  maxSize = 50, // Default 10MB
 }: FileUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

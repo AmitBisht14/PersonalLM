@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PDFSource } from './fileupload';
+import { FileUploadComponent } from './fileupload';
 import { ToastType } from '@/components/ui/toast/Toast';
 import { Chapter } from '@/types/pdf';
 
@@ -59,7 +59,7 @@ export function FileSource({ onCollapse, isCollapsed, onFileStructure }: FileSou
     <div className="flex flex-col min-h-0">
       <div className="p-4">
         <h2 className="text-lg font-semibold mb-4 text-white">Sources</h2>
-        <PDFSource
+        <FileUploadComponent
           onFileSelect={handleFileSelect}
           onFileRemove={handleFileRemove}
           loading={loading}

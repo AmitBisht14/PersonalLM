@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { FileUpload } from '@/components/ui/file-upload/FileUpload';
+import { FileUpload as CoreFileUpload } from '@/components/ui/file-upload/FileUpload';
 import { Toast, ToastType } from '@/components/ui/toast/Toast';
 import { X } from 'lucide-react';
 
-interface PDFSourceProps {
+interface FileUploadComponentProps {
   onFileSelect: (file: File) => void;
   onFileRemove: () => void;
   loading: boolean;
@@ -11,7 +11,7 @@ interface PDFSourceProps {
   onToastClose: () => void;
 }
 
-export function PDFSource({ onFileSelect, onFileRemove, loading, toast, onToastClose }: PDFSourceProps) {
+export function FileUploadComponent({ onFileSelect, onFileRemove, loading, toast, onToastClose }: FileUploadComponentProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleSelect = (file: File) => {
@@ -27,7 +27,7 @@ export function PDFSource({ onFileSelect, onFileRemove, loading, toast, onToastC
   return (
     <div className="max-w-xl text-sm">
       {!selectedFile ? (
-        <FileUpload
+        <CoreFileUpload
           onFileSelect={handleSelect}
           onFileRemove={handleRemove}
         />

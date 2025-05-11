@@ -23,7 +23,7 @@ export function Home() {
       chapters: Chapter[]; 
     }; 
   } | null>(null);
-  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [selectedChapters, setSelectedChapters] = useState<Chapter[] | null>(null);
 
   const handleSourcesCollapse = () => {
     if (!isSourcesCollapsed) {
@@ -45,18 +45,20 @@ export function Home() {
 
   const handleFileStructure = (file: File | null, structure: { filename: string; total_pages: number; chapters: Chapter[] } | null) => {
     setSelectedPDF(file && structure ? { file, structure } : null);
-    setSelectedChapter(null);
+    setSelectedChapters(null);
     setSummary(null);
   };
 
-  const handleChapterSelect = (chapter: Chapter) => {
-    setSelectedChapter(chapter);
+  const handleChapterSelect = (chapters: Chapter[]) => {
+    setSelectedChapters(chapters.length > 0 ? chapters : null);
     setSummary(null);
   };
 
   const handleSummaryGenerated = (newSummary: string) => {
     setSummary(newSummary);
   };
+
+  const chapterForViewer = selectedChapters && selectedChapters.length > 0 ? selectedChapters[0] : null;
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-900 text-gray-100">
@@ -100,12 +102,12 @@ export function Home() {
           isCollapsed: isStudioCollapsed,
           onCollapse: handleStudioCollapse,
           collapseDirection: 'left',
-          children: selectedPDF && selectedChapter ? (
+          children: selectedPDF && chapterForViewer ? (
             <div id="pdf-content-viewer" className="h-full overflow-hidden">
               <PDFViewer 
                 pdfFile={selectedPDF.file}
                 pdfStructure={selectedPDF.structure}
-                selectedChapter={selectedChapter}
+                selectedChapter={chapterForViewer}
                 onSummaryGenerated={handleSummaryGenerated}
               />
             </div>

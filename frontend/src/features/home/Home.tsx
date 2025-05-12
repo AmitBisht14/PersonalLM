@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { FileSource } from './components/sources/fileSource';
-import { Summary } from './components/summary/Summary';
+import { SummaryContainer, SummaryData } from './components/summary/SummaryContainer';
 import { Chapter } from '@/types/pdf';
 import { PDFViewer } from './components/pdf/PDFViewer';
 import { PanelLayout } from '@/components/layout/PanelLayout';
@@ -13,7 +13,7 @@ export function Home() {
   const studioRef = useRef<ImperativePanelHandle>(null);
   const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
   const [isStudioCollapsed, setIsStudioCollapsed] = useState(false);
-  const [summary, setSummary] = useState<string | null>(null);
+  const [summaries, setSummaries] = useState<SummaryData[]>([]);
   const [selectedPDF, setSelectedPDF] = useState<{ 
     file: File; 
     structure: { 
@@ -45,16 +45,27 @@ export function Home() {
   const handleFileStructure = (file: File | null, structure: { filename: string; total_pages: number; chapters: Chapter[] } | null) => {
     setSelectedPDF(file && structure ? { file, structure } : null);
     setSelectedChapters(null);
-    setSummary(null);
+    // Don't clear summaries when changing files
   };
 
   const handleChapterSelect = (chapters: Chapter[]) => {
     setSelectedChapters(chapters.length > 0 ? chapters : null);
-    setSummary(null);
+    // Don't clear summaries when selecting chapters
   };
 
   const handleSummaryGenerated = (newSummary: string) => {
-    setSummary(newSummary);
+    // Create a new summary with metadata
+    const summaryData: SummaryData = {
+      id: Date.now().toString(),
+      title: selectedChapters && selectedChapters.length > 0 
+        ? `Summary of ${selectedChapters.length} chapter(s)` 
+        : 'New Summary',
+      content: newSummary,
+      timestamp: new Date().toLocaleString(),
+    };
+    
+    // Add the new summary to the list
+    setSummaries(prev => [summaryData, ...prev]);
   };
 
   const chapterForViewer = selectedChapters && selectedChapters.length > 0 ? selectedChapters[0] : null;
@@ -85,7 +96,7 @@ export function Home() {
         centerPanel={{
           defaultSize: 50,
           minSize: 20,
-          children: <Summary summary={summary} />
+          children: <SummaryContainer initialSummaries={summaries} />
         }}
         rightPanel={{
           ref: studioRef,

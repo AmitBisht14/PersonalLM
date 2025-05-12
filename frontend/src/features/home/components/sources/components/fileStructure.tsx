@@ -44,7 +44,8 @@ export function FileStructure({ structure, onChapterSelect }: FileStructureProps
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 h-full min-h-0 overflow-y-auto">
+    // Removed min-h-0 and overflow-y-auto. Parent (in FileSource.tsx) should handle scrolling.
+    <div className="bg-gray-800 rounded-lg p-4">
       <h3 className="text-base font-bold text-white mb-2">File Structure</h3>
       <div className="text-xs text-gray-300 mb-2">Title: <span className="font-mono">{pdfTitle}</span></div>
       <div className="text-xs text-gray-300 mb-4">Total Pages: {structure.total_pages}</div>

@@ -6,7 +6,6 @@ import { FileSource } from './components/sources/components/fileSource';
 import { Summary } from './components/summary/Summary';
 import { Chapter } from '@/types/pdf';
 import { PDFViewer } from './components/pdf/PDFViewer';
-import { FileStructure } from './components/sources/components/fileStructure';
 import { PanelLayout } from '@/components/layout/PanelLayout';
 
 export function Home() {
@@ -77,15 +76,9 @@ export function Home() {
                 onCollapse={handleSourcesCollapse} 
                 isCollapsed={isSourcesCollapsed}
                 onFileStructure={handleFileStructure}
+                selectedPDF={selectedPDF}
+                onChapterSelect={handleChapterSelect}
               />
-              {selectedPDF && (
-                <div className="mt-4 flex-1 min-h-0">
-                  <FileStructure 
-                    structure={selectedPDF.structure}
-                    onChapterSelect={handleChapterSelect}
-                  />
-                </div>
-              )}
             </div>
           )
         }}

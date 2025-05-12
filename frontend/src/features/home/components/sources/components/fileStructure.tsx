@@ -11,9 +11,10 @@ interface FileStructureProps {
     chapters: Chapter[];
   };
   onChapterSelect: (chapters: Chapter[]) => void; // Expects an array, even for single selection
+  onMultiSelectChange?: (chapters: Chapter[]) => void; // For checkbox multi-selection
 }
 
-export function FileStructure({ structure, onChapterSelect }: FileStructureProps) {
+export function FileStructure({ structure, onChapterSelect, onMultiSelectChange }: FileStructureProps) {
   const pdfTitle = structure.filename && structure.filename.trim() !== '' ? structure.filename : 'Untitled PDF';
   const [openChapters, setOpenChapters] = useState<{ [idx: number]: boolean }>({});
   const [multiSelectedChapters, setMultiSelectedChapters] = useState<Chapter[]>([]); // For checkbox multi-selection and logging
@@ -29,7 +30,7 @@ export function FileStructure({ structure, onChapterSelect }: FileStructureProps
     onChapterSelect([chapter]); // Pass as an array with one item
   };
 
-  // Handles checkbox changes for multi-selection, primarily for logging
+  // Handles checkbox changes for multi-selection
   const handleCheckboxChange = (chapter: Chapter, isChecked: boolean) => {
     let updatedMultiSelectedChapters;
     if (isChecked) {
@@ -41,6 +42,11 @@ export function FileStructure({ structure, onChapterSelect }: FileStructureProps
     }
     setMultiSelectedChapters(updatedMultiSelectedChapters);
     console.log('FileStructure: Currently multi-selected chapters:', updatedMultiSelectedChapters);
+    
+    // Notify parent component about multi-selection changes
+    if (onMultiSelectChange) {
+      onMultiSelectChange(updatedMultiSelectedChapters);
+    }
   };
 
   return (

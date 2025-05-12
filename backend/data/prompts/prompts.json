@@ -2,11 +2,6 @@
   {
     "id": "f8e7d6c5-b4a3-9876-5432-1fedcba98765",
     "name": "Generate Summary",
-    "prompt": "You are an expert academic summarizer.\nPlease read the following chapter text and respond using these exact section headers:\n\n1. Author\u2019s Tone and Perspective \n\n2. Chapter Summary (500\u2013700 words)\n- If a chapter consist multiple section, generate summary for each section separately. \n\n3. Key Ideas & Arguments\n- Idea A: (2\u20133 sentences)\n- Idea B: (2\u20133 sentences)\n\n\nEnd of instructions. \nDisplay GPT model and cost of execution used at the bottom"
-  },
-  {
-    "id": "e1941da7-3e72-4f8b-b1f1-d7c0ad8cefe7",
-    "name": "New prompt",
-    "prompt": "Let's create a new prompt"
+    "prompt": "You are an expert academic summarizer.\nPlease read the following chapter text and respond using these exact section headers:\n\n1. Author\u2019s Tone and Perspective \n\n2. Chapter Summary (500\u2013700 words)\n- If a chapter consist multiple section, generate summary for each section separately. \n\n3. Key Ideas & Arguments\n- Idea A: (2\u20133 sentences)\n- Idea B: (2\u20133 sentences)\n\n\nDisplay GPT model and cost of execution used at the bottom.\nEnd of instructions. "
   }
 ]

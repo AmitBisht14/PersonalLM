@@ -5,6 +5,7 @@ import { FileUploadComponent } from './fileupload';
 import { ToastType } from '@/components/ui/toast/Toast';
 import { Chapter } from '@/types/pdf';
 import { FileStructure } from './fileStructure'; // Import FileStructure
+import { analyzePdfStructure } from '@/services/pdfStructureService';
 
 interface SelectedPDFType {
   file: File;
@@ -32,21 +33,13 @@ export function FileSource({
 }: FileSourceProps) {
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedCheckboxes, setSelectedCheckboxes] = useState<Chapter[]>([]);
 
   const handleFileSelect = async (file: File) => {
     setToast(null);
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pdf/analyze/structure`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (!res.ok) {
-        throw new Error('Failed to analyze PDF');
-      }
-      const data = await res.json();
+      const data = await analyzePdfStructure(file);
       console.log('Received structure:', data);
       if (onFileStructure) {
         onFileStructure(file, data);
@@ -74,12 +67,16 @@ export function FileSource({
   };
 
   const handleTestClick = () => {
-    console.log('Test button clicked');
+    console.log('Test button clicked with selected chapters:', selectedCheckboxes);
     // Add your test functionality here
     setToast({
       type: 'info',
-      message: 'Test button clicked!',
+      message: `Test button clicked with ${selectedCheckboxes.length} selected chapter(s)!`,
     });
+  };
+
+  const handleMultiSelectChange = (chapters: Chapter[]) => {
+    setSelectedCheckboxes(chapters);
   };
 
   return (
@@ -124,6 +121,7 @@ export function FileSource({
             <FileStructure 
               structure={selectedPDF.structure}
               onChapterSelect={onChapterSelect}
+              onMultiSelectChange={handleMultiSelectChange}
             />
           </div>
         )}
@@ -133,7 +131,8 @@ export function FileSource({
       <div className="flex justify-center items-center p-3 border-t border-gray-700 flex-shrink-0 bg-gray-800">
         <button 
           onClick={handleTestClick}
-          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors shadow-sm"
+          disabled={selectedCheckboxes.length === 0}
+          className={`px-4 py-2 ${selectedCheckboxes.length > 0 ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-600 cursor-not-allowed'} text-white rounded-md transition-colors shadow-sm`}
         >
           Test
         </button>

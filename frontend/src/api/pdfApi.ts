@@ -106,3 +106,30 @@ export const requestSummaryGeneration = async (text: string, prompt: string) => 
     throw error;
   }
 };
+
+/**
+ * Analyzes the structure of a PDF file
+ */
+export const analyzePdfStructureApi = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/pdf/analyze/structure`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.detail || error.message;
+      throw new Error(`Failed to analyze PDF structure: ${message}`);
+    }
+    throw error;
+  }
+};

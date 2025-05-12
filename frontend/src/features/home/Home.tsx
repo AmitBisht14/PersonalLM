@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
-import { FileSource } from './components/sources/components/fileSource';
+import { FileSource } from './components/sources/fileSource';
 import { Summary } from './components/summary/Summary';
 import { Chapter } from '@/types/pdf';
 import { PDFViewer } from './components/pdf/PDFViewer';

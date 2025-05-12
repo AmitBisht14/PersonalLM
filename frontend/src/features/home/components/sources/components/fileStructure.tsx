@@ -53,7 +53,7 @@ export function FileStructure({ structure, onChapterSelect, onMultiSelectChange 
     // Removed min-h-0 and overflow-y-auto. Parent (in FileSource.tsx) should handle scrolling.
     <div className="bg-gray-800 rounded-lg p-4">
       <h3 className="text-base font-bold text-white mb-2">File Structure</h3>
-      <div className="text-xs text-gray-300 mb-2">Title: <span className="font-mono">{pdfTitle}</span></div>
+      <div className="text-xs text-gray-300 mb-2 flex items-center">Title: <span className="font-mono ml-1 truncate max-w-[200px] inline-block" title={pdfTitle}>{pdfTitle}</span></div>
       <div className="text-xs text-gray-300 mb-4">Total Pages: {structure.total_pages}</div>
       <div className="space-y-2">
         {structure.chapters.map((chapter, idx) => {

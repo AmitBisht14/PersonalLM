@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SummaryContainer, SummaryData } from './SummaryContainer';
+import { SummaryContainer, SummaryData } from '../SummaryContainer';
 
 interface SummaryProps {
   summary: string | null;

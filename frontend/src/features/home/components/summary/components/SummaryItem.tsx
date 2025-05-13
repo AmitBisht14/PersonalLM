@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
-import { PrintButton } from '../../../../components/ui/PrintButton';
-import { printContent } from '../../../../services/print/printService';
+import { PrintButton } from '@/components/ui/PrintButton';
+import { printContent } from '@/services/print/printService';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface SummaryItemProps {

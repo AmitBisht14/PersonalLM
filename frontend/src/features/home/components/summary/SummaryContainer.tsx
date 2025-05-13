@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { SummaryItem } from './SummaryItem';
+import { SummaryItem } from './components/SummaryItem';
 
 export interface SummaryData {
   id: string;

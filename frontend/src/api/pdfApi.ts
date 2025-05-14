@@ -64,48 +64,8 @@ export const fetchRawPDFContent = async (
   }
 };
 
-/**
- * Fetches the summary prompt template
- */
-export const fetchSummaryPromptTemplate = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/api/v1/prompts`);
-    
-    // Find the prompt with name "Generate Summary"
-    const summaryPrompt = response.data.find((p: any) => p.name === "Generate Summary");
-    
-    if (!summaryPrompt) {
-      throw new Error("Summary prompt not found");
-    }
-    
-    return summaryPrompt;
-  } catch (error: any) {
-    if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.detail || error.message;
-      throw new Error(`Failed to fetch summary prompt: ${message}`);
-    }
-    throw error;
-  }
-};
 
-/**
- * Sends a request to generate a summary based on text and prompt
- */
-export const requestSummaryGeneration = async (text: string, prompt: string) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/api/v1/summary`, {
-      text,
-      prompt
-    });
-    return response.data;
-  } catch (error: any) {
-    if (axios.isAxiosError(error)) {
-      const message = error.response?.data?.detail || error.message;
-      throw new Error(`Failed to generate summary: ${message}`);
-    }
-    throw error;
-  }
-};
+
 
 /**
  * Analyzes the structure of a PDF file

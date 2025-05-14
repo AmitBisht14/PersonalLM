@@ -1,10 +1,10 @@
 import { PDFContent } from '../types/pdf';
 import { 
   fetchFormattedPDFContent, 
-  fetchRawPDFContent,
-  fetchSummaryPromptTemplate,
-  requestSummaryGeneration
+  fetchRawPDFContent
 } from '../api/pdfApi';
+import { fetchPromptsApi } from '../api/promptApi';
+import { requestSummaryGenerationApi } from '../api/summaryApi';
 
 /**
  * Fetches both formatted and raw content from a PDF for the specified page range
@@ -36,7 +36,15 @@ export const fetchPDFContent = async (
  */
 export const fetchSummaryPrompt = async (): Promise<{ prompt: string }> => {
   try {
-    const summaryPrompt = await fetchSummaryPromptTemplate();
+    const prompts = await fetchPromptsApi();
+    
+    // Find the prompt with name "Generate Summary"
+    const summaryPrompt = prompts.find(p => p.name === "Generate Summary");
+    
+    if (!summaryPrompt) {
+      throw new Error("Summary prompt not found");
+    }
+    
     return { prompt: summaryPrompt.prompt };
   } catch (error) {
     // Re-throw the error - it's already been handled by the API layer
@@ -49,7 +57,7 @@ export const fetchSummaryPrompt = async (): Promise<{ prompt: string }> => {
  */
 export const generateSummary = async (text: string, prompt: string): Promise<string> => {
   try {
-    const result = await requestSummaryGeneration(text, prompt);
+    const result = await requestSummaryGenerationApi(text, prompt);
     return result.summary;
   } catch (error) {
     // Re-throw the error - it's already been handled by the API layer

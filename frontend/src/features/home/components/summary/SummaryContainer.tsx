@@ -3,6 +3,7 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { SummaryItem } from './components/SummaryItem';
 import { Chapter } from '@/types/pdf';
+import { fetchRawPDFContent, fetchSummaryPromptTemplate, requestSummaryGeneration } from '@/api/pdfApi';
 
 export interface SummaryData {
   id: string;
@@ -46,28 +47,65 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
     setSummaries(prevSummaries => [newSummary, ...prevSummaries]);
   };
 
-  const generateSummary = (chaptersToSummarize?: Chapter[]) => {
+  const generateSummary = async (chaptersToSummarize?: Chapter[]) => {
     // Use passed chapters if available, otherwise fall back to selectedChapters prop
     const chaptersToUse = chaptersToSummarize?.length ? chaptersToSummarize : selectedChapters;
     
-    // Log the selected chapter information
-    console.log('Selected chapters received in SummaryContainer:', chaptersToUse);
-    console.log('Chapter details:');
-    chaptersToUse.forEach((chapter, index) => {
-      console.log(`Chapter ${index + 1}: ${chapter.title}, Pages: ${chapter.start_page}-${chapter.end_page}`);
-    });
+    if (!pdfFile || chaptersToUse.length === 0 || isGenerating) {
+      return;
+    }
     
-    // Calculate total pages
-    const totalPages = chaptersToUse.reduce((sum, chapter) => {
-      return sum + (chapter.end_page - chapter.start_page + 1);
-    }, 0);
-    console.log(`Total pages selected: ${totalPages}`);
+    setIsGenerating(true);
+    
+    try {
+      // Step 1: Get the summary prompt template
+      const summaryPrompt = await fetchSummaryPromptTemplate();
+      
+      // Step 2: Fetch raw content for each chapter
+      const chapterContents = await Promise.all(
+        chaptersToUse.map(chapter => 
+          fetchRawPDFContent(pdfFile, chapter.start_page, chapter.end_page)
+        )
+      );
+      
+      // Step 3: Combine all chapter contents
+      const combinedContent = chapterContents.join('\n\n');
+      
+      // Step 4: Generate summary using the prompt template and combined content
+      const summaryResponse = await requestSummaryGeneration(combinedContent, summaryPrompt.content);
+      
+      // Step 5: Add the new summary to the list
+      const newSummary: SummaryData = {
+        id: Date.now().toString(),
+        title: `Summary of ${chaptersToUse.length} chapter(s)`,
+        content: summaryResponse.summary,
+        timestamp: new Date().toISOString()
+      };
+      
+      addSummary(newSummary);
+      
+      // Log completion information
+      console.log('Summary generated successfully');
+    } catch (error) {
+      console.error('Error generating summary:', error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
     <section className="h-full p-4 flex flex-col">
       <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <h2 className="text-xl font-semibold text-white">Summaries</h2>
+        {isGenerating && (
+          <div className="flex items-center text-blue-400">
+            <svg className="animate-spin -ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Generating summary...</span>
+          </div>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
         {summaries.length > 0 ? (

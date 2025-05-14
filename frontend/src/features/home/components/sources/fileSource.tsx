@@ -23,6 +23,7 @@ interface FileSourceProps {
   onFileStructure?: (file: File | null, structure: { filename: string; total_pages: number; chapters: Chapter[] } | null) => void;
   selectedPDF: SelectedPDFType | null; // Add selectedPDF prop
   onChapterSelect: (chapters: Chapter[]) => void; // Add onChapterSelect prop
+  onGenerateSummary?: (chapters: Chapter[]) => void; // Add prop for summary generation
 }
 
 export function FileSource({ 
@@ -30,7 +31,8 @@ export function FileSource({
   isCollapsed, 
   onFileStructure, 
   selectedPDF, 
-  onChapterSelect 
+  onChapterSelect,
+  onGenerateSummary
 }: FileSourceProps) {
   const [toast, setToast] = useState<{ type: ToastType; message: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -68,12 +70,10 @@ export function FileSource({
   };
 
   const handleTestClick = () => {
-    console.log('Test button clicked with selected chapters:', selectedCheckboxes);
-    // Add your test functionality here
-    setToast({
-      type: 'info',
-      message: `Test button clicked with ${selectedCheckboxes.length} selected chapter(s)!`,
-    });
+    // Simply pass the selected chapters to the onGenerateSummary callback
+    if (selectedCheckboxes.length > 0 && onGenerateSummary) {
+      onGenerateSummary(selectedCheckboxes);
+    }
   };
 
   const handleMultiSelectChange = (chapters: Chapter[]) => {

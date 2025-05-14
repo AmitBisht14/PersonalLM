@@ -11,6 +11,7 @@ import { PanelLayout } from '@/components/layout/PanelLayout';
 export function Home() {
   const sourcesRef = useRef<ImperativePanelHandle>(null);
   const studioRef = useRef<ImperativePanelHandle>(null);
+  const summaryContainerRef = useRef<any>(null);
   const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
   const [isStudioCollapsed, setIsStudioCollapsed] = useState(false);
   const [summaries, setSummaries] = useState<SummaryData[]>([]);
@@ -89,6 +90,11 @@ export function Home() {
                 onFileStructure={handleFileStructure}
                 selectedPDF={selectedPDF}
                 onChapterSelect={handleChapterSelect}
+                onGenerateSummary={(chapters) => {
+                  if (summaryContainerRef.current) {
+                    summaryContainerRef.current.generateSummary(chapters);
+                  }
+                }}
               />
             </div>
           )
@@ -96,7 +102,11 @@ export function Home() {
         centerPanel={{
           defaultSize: 50,
           minSize: 20,
-          children: <SummaryContainer initialSummaries={summaries} />
+          children: <SummaryContainer 
+            ref={summaryContainerRef}
+            initialSummaries={summaries} 
+            pdfFile={selectedPDF?.file}
+          />
         }}
         rightPanel={{
           ref: studioRef,

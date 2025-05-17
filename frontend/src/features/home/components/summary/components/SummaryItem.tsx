@@ -2,23 +2,19 @@ import { useRef, useState } from 'react';
 import { PrintButton } from '@/components/ui/PrintButton';
 import { printContent } from '@/services/print/printService';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { RawChapterContent } from '@/services/summaryService';
 
 interface SummaryItemProps {
-  title: string;
-  content: string;
-  timestamp: string;
-  id: string;
-  pageCount?: number;
-  chapterCount?: number;
+  chapterContent: RawChapterContent;
   onDelete?: (id: string) => void;
 }
 
-export function SummaryItem({ title, content, timestamp, id, pageCount, chapterCount, onDelete }: SummaryItemProps) {
+export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
-    printContent(content, title);
+    printContent(chapterContent.content, chapterContent.chapter.title);
   };
 
   const toggleCollapse = () => {
@@ -31,17 +27,13 @@ export function SummaryItem({ title, content, timestamp, id, pageCount, chapterC
       <div className="flex justify-between items-center p-3 bg-gray-700 cursor-pointer" onClick={toggleCollapse}>
         <div className="flex items-center gap-2">
           {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-          <h3 className="font-medium text-white">{title}</h3>
-          {(pageCount || chapterCount) && (
-            <span className="text-xs text-gray-300 ml-2">
-              {chapterCount && `${chapterCount} chapter${chapterCount !== 1 ? 's' : ''}`}
-              {chapterCount && pageCount && ' • '}
-              {pageCount && `${pageCount} page${pageCount !== 1 ? 's' : ''}`}
-            </span>
-          )}
+          <h3 className="font-medium text-white">{chapterContent.chapter.title}</h3>
+          <span className="text-xs text-gray-300 ml-2">
+            Pages {chapterContent.chapter.start_page} - {chapterContent.chapter.end_page}
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">{timestamp}</span>
+          <span className="text-xs text-gray-400">{new Date().toLocaleTimeString()}</span>
           <button
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
@@ -60,7 +52,8 @@ export function SummaryItem({ title, content, timestamp, id, pageCount, chapterC
             <button 
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
-                onDelete(id);
+                // Use the chapter title as an identifier since Chapter doesn't have an id property
+                onDelete(chapterContent.chapter.title);
               }}
               className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-gray-600"
               aria-label="Delete summary"
@@ -78,7 +71,7 @@ export function SummaryItem({ title, content, timestamp, id, pageCount, chapterC
       {/* Content area - collapsible */}
       {!isCollapsed && (
         <div className="p-4" ref={summaryRef}>
-          <div className="whitespace-pre-wrap text-gray-100">{content}</div>
+          <div className="whitespace-pre-wrap text-gray-100">{chapterContent.content}</div>
         </div>
       )}
     </div>

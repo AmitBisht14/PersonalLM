@@ -5,18 +5,9 @@ import { Chapter } from '@/types/pdf';
 import { SummaryItem } from './components/SummaryItem';
 import { fetchRawChapterContents, RawChapterContent } from '@/services/summaryService';
 
-export interface SummaryData {
-  id: string;
-  title: string;
-  content: string;
-  timestamp: string;
-  pageCount?: number;
-  chapterCount?: number;
-  chapterContents?: RawChapterContent[];
-}
+// Interface no longer needed as we're directly using RawChapterContent
 
 interface SummaryContainerProps {
-  initialSummaries?: SummaryData[];
   pdfFile?: File;
   selectedChapters?: Chapter[];
 }
@@ -26,28 +17,21 @@ export interface SummaryContainerHandle {
 }
 
 export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContainerProps>((
-  { initialSummaries = [], pdfFile, selectedChapters = [] },
+  { pdfFile, selectedChapters = [] },
   ref
 ) => {
-  const [summaries, setSummaries] = useState<SummaryData[]>(initialSummaries);
+  const [chapterContents, setChapterContents] = useState<RawChapterContent[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Update summaries when initialSummaries prop changes
-  useEffect(() => {
-    setSummaries(initialSummaries);
-  }, [initialSummaries]);
+  // No longer needed as we're not accepting initialSummaries
 
   // Expose the generateSummary function via ref
   useImperativeHandle(ref, () => ({
     generateSummary
   }));
 
-  const handleDeleteSummary = (id: string) => {
-    setSummaries(prevSummaries => prevSummaries.filter(summary => summary.id !== id));
-  };
-
-  const addSummary = (newSummary: SummaryData) => {
-    setSummaries(prevSummaries => [newSummary, ...prevSummaries]);
+  const handleDeleteChapter = (title: string) => {
+    setChapterContents(prevContents => prevContents.filter(item => item.chapter.title !== title));
   };
 
   const generateSummary = async (chaptersToSummarize?: Chapter[]) => {
@@ -69,7 +53,9 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
       // Fetch chapter contents using the service
       const allChapterRawContent = await fetchRawChapterContents(chaptersToUse, pdfFile);
       console.log('allChapterRawContent', allChapterRawContent);
-      // addSummary(newSummary);
+      
+      // Update state with the fetched raw chapter contents
+      setChapterContents(allChapterRawContent);
     } catch (error) {
       console.error('Error in generateSummary:', error);
       // Handle error appropriately - could add error state or notification here
@@ -90,24 +76,19 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
         )}
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-        {summaries.length > 0 ? (
+        {chapterContents.length > 0 ? (
           <div>
-            {summaries.map(summary => (
+            {chapterContents.map((chapterContent, index) => (
               <SummaryItem
-                key={summary.id}
-                id={summary.id}
-                title={summary.title}
-                content={summary.content}
-                timestamp={summary.timestamp}
-                pageCount={summary.pageCount}
-                chapterCount={summary.chapterCount}
-                onDelete={handleDeleteSummary}
+                key={`${chapterContent.chapter.title}-${index}`}
+                chapterContent={chapterContent}
+                onDelete={handleDeleteChapter}
               />
             ))}
           </div>
         ) : (
           <div className="bg-gray-800 rounded-lg p-4 text-gray-400">
-            No summaries generated yet. Select chapters and click "Generate Summary".
+            No chapter contents fetched yet. Select chapters and click "Generate Summary".
           </div>
         )}
       </div>

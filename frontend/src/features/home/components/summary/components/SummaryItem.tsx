@@ -16,29 +16,52 @@ export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
   const [error, setError] = useState<string>('');
   const summaryRef = useRef<HTMLDivElement>(null);
   
-  // Generate summary when component is expanded
+  // Generate summary when component mounts
   useEffect(() => {
+    let isMounted = true; // Flag to prevent state updates after unmount
+    
     const fetchSummary = async () => {
-      if (!isCollapsed) { // Only fetch when expanded
-        try {
-          setIsLoading(true);
-          setError('');
-          const generatedSummary = await generateSummaryForContent(chapterContent.content);
+      // Skip if we already have a summary or are already loading
+      if (summary || isLoading) return;
+      
+      try {
+        // Set loading state first
+        setIsLoading(true);
+        setError('');
+        
+        // Generate the summary
+        const generatedSummary = await generateSummaryForContent(chapterContent.content);
+        
+        // Only update state if component is still mounted
+        if (isMounted) {
+          // Update summary first, then set loading to false
           setSummary(generatedSummary);
-        } catch (err) {
-          console.error('Error generating summary:', err);
+        }
+      } catch (err) {
+        console.error('Error generating summary:', err);
+        if (isMounted) {
           setError('Failed to generate summary. Please try again.');
-        } finally {
-          setIsLoading(false);
+        }
+      } finally {
+        // Ensure loading state is updated last
+        if (isMounted) {
+          // Use setTimeout to ensure this happens after state updates
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 0);
         }
       }
     };
     
-    // If we don't have a summary yet and the component is expanded, fetch it
-    if (!summary && !isCollapsed) {
-      fetchSummary();
-    }
-  }, [chapterContent, isCollapsed, summary]);
+    // Start generating summary as soon as raw content is available
+    fetchSummary();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  // Remove isLoading from dependencies to prevent re-runs when loading state changes
+  }, [chapterContent.content, summary]);
 
   const handlePrint = () => {
     // If summary is available, print that; otherwise print raw content
@@ -68,6 +91,7 @@ export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
           <span className={`text-xs ${isLoading ? 'text-yellow-400' : summary ? 'text-green-400' : 'text-gray-400'}`}>
             {isLoading ? 'Summary Generating...' : summary ? 'Summary Generated' : 'Raw Content'}
           </span>
+
           <button
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();

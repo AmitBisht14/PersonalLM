@@ -76,6 +76,47 @@ export const fetchSummaryPrompt = async (): Promise<string> => {
 };
 
 /**
+ * Handles fetching chapter contents for a list of chapters from a PDF file
+ * This function encapsulates the business logic previously in the SummaryContainer component
+ */
+export const fetchAndProcessChapterContents = async (chapters: Chapter[], pdfFile: File): Promise<RawChapterContent[]> => {
+  try {
+    if (!chapters.length || !pdfFile) {
+      console.error('No chapters selected or PDF file not available for content fetching');
+      return [];
+    }
+    
+    console.log('Processing chapters in service:', chapters);
+    
+    // Fetch raw content for all selected chapters
+    const contents = await fetchRawChapterContents(chapters, pdfFile);
+    console.log(`Fetched content for ${contents.length} chapters`);
+    
+    return contents;
+  } catch (error) {
+    console.error('Error in fetchAndProcessChapterContents:', error);
+    throw error;
+  }
+};
+
+/**
+ * Loads the summary prompt and handles loading state
+ * Returns both the prompt and loading state
+ */
+export const loadSummaryPromptWithState = async (currentPrompt: string | null): Promise<{ prompt: string | null, isLoading: boolean }> => {
+  // Skip if we already have the prompt
+  if (currentPrompt) return { prompt: currentPrompt, isLoading: false };
+  
+  try {
+    const prompt = await fetchSummaryPrompt();
+    return { prompt, isLoading: false };
+  } catch (error) {
+    console.error('Error loading summary prompt:', error);
+    return { prompt: null, isLoading: false };
+  }
+};
+
+/**
  * Generates a summary for a single chapter's content
  * @param content The content to summarize
  * @param prompt Optional prompt to use for summarization. If not provided, will fetch the prompt.

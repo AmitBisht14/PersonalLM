@@ -3,7 +3,7 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Chapter } from '@/types/pdf';
 import { SummaryItem } from './components/SummaryItem';
-import { fetchRawChapterContents, RawChapterContent } from '@/services/summaryService';
+import { fetchRawChapterContents, RawChapterContent, fetchSummaryPrompt } from '@/services/summaryService';
 
 // Interface no longer needed as we're directly using RawChapterContent
 
@@ -13,7 +13,7 @@ interface SummaryContainerProps {
 }
 
 export interface SummaryContainerHandle {
-  generateSummary: (chapters: Chapter[]) => void;
+  fetchChapterContents: (chapters: Chapter[]) => void;
 }
 
 export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContainerProps>((
@@ -22,25 +22,44 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
 ) => {
   const [chapterContents, setChapterContents] = useState<RawChapterContent[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [summaryPrompt, setSummaryPrompt] = useState<string | null>(null);
+  const [isPromptLoading, setIsPromptLoading] = useState(false);
 
-  // No longer needed as we're not accepting initialSummaries
+  // Fetch the summary prompt once when the component mounts
+  useEffect(() => {
+    const loadSummaryPrompt = async () => {
+      if (summaryPrompt) return; // Skip if we already have the prompt
+      
+      try {
+        setIsPromptLoading(true);
+        const prompt = await fetchSummaryPrompt();
+        setSummaryPrompt(prompt);
+      } catch (error) {
+        console.error('Error loading summary prompt:', error);
+      } finally {
+        setIsPromptLoading(false);
+      }
+    };
 
-  // Expose the generateSummary function via ref
+    loadSummaryPrompt();
+  }, [summaryPrompt]);
+
+  // Expose the fetchChapterContents function via ref
   useImperativeHandle(ref, () => ({
-    generateSummary
+    fetchChapterContents
   }));
 
   const handleDeleteChapter = (title: string) => {
     setChapterContents(prevContents => prevContents.filter(item => item.chapter.title !== title));
   };
 
-  const generateSummary = async (chaptersToSummarize?: Chapter[]) => {
+  const fetchChapterContents = async (chaptersToSummarize?: Chapter[]) => {
     try {
       // Use passed chapters if available, otherwise fall back to selectedChapters prop
       const chaptersToUse = chaptersToSummarize?.length ? chaptersToSummarize : selectedChapters;
       
       if (!chaptersToUse.length || !pdfFile) {
-        console.error('No chapters selected or PDF file not available for summary generation');
+        console.error('No chapters selected or PDF file not available for content fetching');
         return;
       }
       
@@ -57,7 +76,7 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
       // Update state with the fetched raw chapter contents
       setChapterContents(allChapterRawContent);
     } catch (error) {
-      console.error('Error in generateSummary:', error);
+      console.error('Error in fetchChapterContents:', error);
       // Handle error appropriately - could add error state or notification here
     } finally {
       setIsGenerating(false);
@@ -83,6 +102,8 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
                 key={`${chapterContent.chapter.title}-${index}`}
                 chapterContent={chapterContent}
                 onDelete={handleDeleteChapter}
+                summaryPrompt={summaryPrompt}
+                isPromptLoading={isPromptLoading}
               />
             ))}
           </div>

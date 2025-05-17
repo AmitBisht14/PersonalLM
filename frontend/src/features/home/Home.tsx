@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { ImperativePanelHandle } from 'react-resizable-panels';
 import { FileSource } from './components/sources/fileSource';
-import { SummaryContainer, SummaryData } from './components/summary/SummaryContainer';
+import { SummaryContainer } from './components/summary/SummaryContainer';
 import { Chapter } from '@/types/pdf';
 import { PDFViewer } from './components/pdf/PDFViewer';
 import { PanelLayout } from '@/components/layout/PanelLayout';
@@ -14,7 +14,6 @@ export function Home() {
   const summaryContainerRef = useRef<any>(null);
   const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
   const [isStudioCollapsed, setIsStudioCollapsed] = useState(false);
-  const [summaries, setSummaries] = useState<SummaryData[]>([]);
   const [selectedPDF, setSelectedPDF] = useState<{ 
     file: File; 
     structure: { 
@@ -54,21 +53,6 @@ export function Home() {
     // Don't clear summaries when selecting chapters
   };
 
-  const handleSummaryGenerated = (newSummary: string) => {
-    // Create a new summary with metadata
-    const summaryData: SummaryData = {
-      id: Date.now().toString(),
-      title: selectedChapters && selectedChapters.length > 0 
-        ? `Summary of ${selectedChapters.length} chapter(s)` 
-        : 'New Summary',
-      content: newSummary,
-      timestamp: new Date().toLocaleString(),
-    };
-    
-    // Add the new summary to the list
-    setSummaries(prev => [summaryData, ...prev]);
-  };
-
   const chapterForViewer = selectedChapters && selectedChapters.length > 0 ? selectedChapters[0] : null;
 
   return (
@@ -92,7 +76,7 @@ export function Home() {
                 onChapterSelect={handleChapterSelect}
                 onGenerateSummary={(chapters) => {
                   if (summaryContainerRef.current) {
-                    summaryContainerRef.current.generateSummary(chapters);
+                    summaryContainerRef.current.fetchChapterContents(chapters);
                   }
                 }}
               />
@@ -104,7 +88,6 @@ export function Home() {
           minSize: 20,
           children: <SummaryContainer 
             ref={summaryContainerRef}
-            initialSummaries={summaries} 
             pdfFile={selectedPDF?.file}
           />
         }}
@@ -122,7 +105,6 @@ export function Home() {
                 pdfFile={selectedPDF.file}
                 pdfStructure={selectedPDF.structure}
                 selectedChapter={chapterForViewer}
-                onSummaryGenerated={handleSummaryGenerated}
               />
             </div>
           ) : null

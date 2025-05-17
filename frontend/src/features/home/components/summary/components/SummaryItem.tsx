@@ -7,40 +7,53 @@ import { RawChapterContent, generateSummaryForContent } from '@/services/summary
 interface SummaryItemProps {
   chapterContent: RawChapterContent;
   onDelete?: (id: string) => void;
+  summaryPrompt: string | null;
+  isPromptLoading: boolean;
 }
 
-export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
+export function SummaryItem({ chapterContent, onDelete, summaryPrompt, isPromptLoading }: SummaryItemProps) {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [summary, setSummary] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const hasStartedGeneration = useRef(false);
   const summaryRef = useRef<HTMLDivElement>(null);
   
-  // Generate summary when component mounts
+  // Generate summary when we have the prompt and content
   useEffect(() => {
     let isMounted = true; // Flag to prevent state updates after unmount
     
-    const fetchSummary = async () => {
-      // Skip if we already have a summary or are already loading
-      if (summary || isLoading) return;
+    const generateSummary = async () => {
+      // Skip if we already have a summary, are already loading, have started generation, or don't have the prompt yet
+      if (summary || isLoading || hasStartedGeneration.current || !summaryPrompt || isPromptLoading) return;
+      
+      // Mark that we've started generation to prevent duplicate calls
+      hasStartedGeneration.current = true;
+      console.log('Starting summary generation for:', chapterContent.chapter.title);
       
       try {
         // Set loading state first
         setIsLoading(true);
         setError('');
         
-        // Generate the summary
-        const generatedSummary = await generateSummaryForContent(chapterContent.content);
+        // Generate the summary using the prompt passed from parent
+        const generatedSummary = await generateSummaryForContent(chapterContent.content, summaryPrompt);
+        console.log('Summary generated successfully:', generatedSummary.substring(0, 50) + '...');
         
         // Only update state if component is still mounted
         if (isMounted) {
           // Update summary first, then set loading to false
           setSummary(generatedSummary);
+          // Auto-expand when summary is ready
+          setIsCollapsed(false);
+          console.log('Summary set and item expanded');
         }
       } catch (err) {
         console.error('Error generating summary:', err);
         if (isMounted) {
           setError('Failed to generate summary. Please try again.');
+          // Reset the flag so we can try again
+          hasStartedGeneration.current = false;
         }
       } finally {
         // Ensure loading state is updated last
@@ -48,20 +61,20 @@ export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
           // Use setTimeout to ensure this happens after state updates
           setTimeout(() => {
             setIsLoading(false);
+            console.log('Loading state set to false');
           }, 0);
         }
       }
     };
     
-    // Start generating summary as soon as raw content is available
-    fetchSummary();
+    // Start generating summary as soon as we have both the prompt and raw content
+    generateSummary();
     
     // Cleanup function to prevent state updates after unmount
     return () => {
       isMounted = false;
     };
-  // Remove isLoading from dependencies to prevent re-runs when loading state changes
-  }, [chapterContent.content, summary]);
+  }, [chapterContent.chapter.title, summaryPrompt, isPromptLoading]);
 
   const handlePrint = () => {
     // If summary is available, print that; otherwise print raw content
@@ -72,8 +85,7 @@ export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
   const toggleCollapse = () => {
     const newCollapsedState = !isCollapsed;
     setIsCollapsed(newCollapsedState);
-    
-    // If we're expanding and don't have a summary yet, we'll trigger the fetch in useEffect
+    console.log('Item collapsed state toggled to:', newCollapsedState ? 'collapsed' : 'expanded');
   };
 
   return (

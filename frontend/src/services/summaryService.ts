@@ -61,14 +61,29 @@ export const fetchRawChapterContents = async (chapters: Chapter[], file: File) =
 };
 
 /**
- * Generates a summary for a single chapter's content
+ * Fetches the summary prompt template
  */
-export const generateSummaryForContent = async (content: string): Promise<string> => {
+export const fetchSummaryPrompt = async (): Promise<string> => {
   try {
-    // Fetch the summary prompt template
     const prompts = await fetchPromptsApi();
     const summaryPrompt = prompts.find(p => p.name === 'summary_prompt')?.prompt || 
       'Please summarize the following content:';
+    return summaryPrompt;
+  } catch (error) {
+    console.error('Error fetching summary prompt:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generates a summary for a single chapter's content
+ * @param content The content to summarize
+ * @param prompt Optional prompt to use for summarization. If not provided, will fetch the prompt.
+ */
+export const generateSummaryForContent = async (content: string, prompt?: string): Promise<string> => {
+  try {
+    // Use provided prompt or fetch it if not provided
+    const summaryPrompt = prompt || await fetchSummaryPrompt();
     
     // Generate the summary
     const summaryResponse = await requestSummaryGenerationApi(content, summaryPrompt);

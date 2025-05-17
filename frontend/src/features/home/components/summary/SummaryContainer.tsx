@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { SummaryItem } from './components/SummaryItem';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Chapter } from '@/types/pdf';
+import { SummaryItem } from './components/SummaryItem';
+import { fetchRawChapterContents, ChapterContent } from '@/services/summaryService';
 
 export interface SummaryData {
   id: string;
   title: string;
   content: string;
   timestamp: string;
+  pageCount?: number;
+  chapterCount?: number;
+  chapterContents?: ChapterContent[];
 }
 
 interface SummaryContainerProps {
@@ -46,28 +50,44 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
     setSummaries(prevSummaries => [newSummary, ...prevSummaries]);
   };
 
-  const generateSummary = (chaptersToSummarize?: Chapter[]) => {
-    // Use passed chapters if available, otherwise fall back to selectedChapters prop
-    const chaptersToUse = chaptersToSummarize?.length ? chaptersToSummarize : selectedChapters;
-    
-    // Log the selected chapter information
-    console.log('Selected chapters received in SummaryContainer:', chaptersToUse);
-    console.log('Chapter details:');
-    chaptersToUse.forEach((chapter, index) => {
-      console.log(`Chapter ${index + 1}: ${chapter.title}, Pages: ${chapter.start_page}-${chapter.end_page}`);
-    });
-    
-    // Calculate total pages
-    const totalPages = chaptersToUse.reduce((sum, chapter) => {
-      return sum + (chapter.end_page - chapter.start_page + 1);
-    }, 0);
-    console.log(`Total pages selected: ${totalPages}`);
+  const generateSummary = async (chaptersToSummarize?: Chapter[]) => {
+    try {
+      // Use passed chapters if available, otherwise fall back to selectedChapters prop
+      const chaptersToUse = chaptersToSummarize?.length ? chaptersToSummarize : selectedChapters;
+      
+      if (!chaptersToUse.length || !pdfFile) {
+        console.error('No chapters selected or PDF file not available for summary generation');
+        return;
+      }
+      
+      // Log the selected chapter information
+      console.log('Selected chapters received in SummaryContainer:', chaptersToUse);
+      
+      // Set loading state
+      setIsGenerating(true);
+      
+      // Fetch chapter contents using the service
+      const allChapterRawContent = await fetchRawChapterContents(chaptersToUse, pdfFile);
+      console.log('allChapterRawContent', allChapterRawContent);
+      // addSummary(newSummary);
+    } catch (error) {
+      console.error('Error in generateSummary:', error);
+      // Handle error appropriately - could add error state or notification here
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
     <section className="h-full p-4 flex flex-col">
       <div className="flex justify-between items-center mb-4 flex-shrink-0">
         <h2 className="text-xl font-semibold text-white">Summaries</h2>
+        {isGenerating && (
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500 mr-2"></div>
+            <span className="text-sm text-gray-300">Generating summary...</span>
+          </div>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
         {summaries.length > 0 ? (
@@ -79,6 +99,8 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
                 title={summary.title}
                 content={summary.content}
                 timestamp={summary.timestamp}
+                pageCount={summary.pageCount}
+                chapterCount={summary.chapterCount}
                 onDelete={handleDeleteSummary}
               />
             ))}

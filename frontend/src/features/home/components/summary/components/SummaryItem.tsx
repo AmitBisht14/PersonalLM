@@ -8,10 +8,12 @@ interface SummaryItemProps {
   content: string;
   timestamp: string;
   id: string;
+  pageCount?: number;
+  chapterCount?: number;
   onDelete?: (id: string) => void;
 }
 
-export function SummaryItem({ title, content, timestamp, id, onDelete }: SummaryItemProps) {
+export function SummaryItem({ title, content, timestamp, id, pageCount, chapterCount, onDelete }: SummaryItemProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +31,14 @@ export function SummaryItem({ title, content, timestamp, id, onDelete }: Summary
       <div className="flex justify-between items-center p-3 bg-gray-700 cursor-pointer" onClick={toggleCollapse}>
         <div className="flex items-center gap-2">
           {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-          <h3 className="font-semibold text-white">{title}</h3>
+          <h3 className="font-medium text-white">{title}</h3>
+          {(pageCount || chapterCount) && (
+            <span className="text-xs text-gray-300 ml-2">
+              {chapterCount && `${chapterCount} chapter${chapterCount !== 1 ? 's' : ''}`}
+              {chapterCount && pageCount && ' • '}
+              {pageCount && `${pageCount} page${pageCount !== 1 ? 's' : ''}`}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400">{timestamp}</span>

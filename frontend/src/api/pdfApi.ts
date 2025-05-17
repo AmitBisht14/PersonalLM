@@ -64,9 +64,6 @@ export const fetchRawPDFContent = async (
   }
 };
 
-
-
-
 /**
  * Analyzes the structure of a PDF file
  */

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Chapter } from '@/types/pdf';
-import { fetchPDFContent, fetchSummaryPrompt, generateSummary } from '@/services/pdfService';
+import { fetchPDFContent } from '@/services/pdfService';
 
 interface PDFContent {
   filename: string;
@@ -23,20 +23,16 @@ interface PDFViewerProps {
     chapters: Chapter[];
   };
   selectedChapter: Chapter;
-  onSummaryGenerated: (summary: string) => void;
 }
 
-export function PDFViewer({ pdfFile, pdfStructure, selectedChapter, onSummaryGenerated }: PDFViewerProps) {
+export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerProps) {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<PDFContent | null>(null);
-  const [rawContent, setRawContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     // Reset state when PDF file changes
     setContent(null);
-    setRawContent(null);
     setError(null);
   }, [pdfFile]);
 
@@ -46,14 +42,14 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter, onSummaryGen
       setLoading(true);
       setError(null);
       try {
-        const { content: formattedContent, rawContent: rawText } = await fetchPDFContent(
+        // Only fetch formatted content
+        const { content: formattedContent } = await fetchPDFContent(
           pdfFile, 
           selectedChapter.start_page, 
           selectedChapter.end_page || selectedChapter.start_page
         );
         console.log('Received content:', formattedContent);
         setContent(formattedContent);
-        setRawContent(rawText);
       } catch (err: any) {
         console.error('Error loading content:', err);
         setError(err.message || 'Error fetching PDF content');
@@ -65,48 +61,12 @@ export function PDFViewer({ pdfFile, pdfStructure, selectedChapter, onSummaryGen
     loadChapterContent();
   }, [selectedChapter, pdfFile]);
 
-  const handleGenerateSummary = async () => {
-    setSummaryLoading(true);
-    setError(null); // Clear any previous errors
-    
-    try {
-      // Step 1: Fetch the summary prompt
-      const promptResult = await fetchSummaryPrompt();
-      
-      if (!promptResult || !promptResult.prompt) {
-        throw new Error('Could not retrieve summary prompt template');
-      }
-      
-      // Step 2: Generate the summary if we have content
-      if (rawContent) {
-        const summary = await generateSummary(rawContent, promptResult.prompt);
-        if (summary) {
-          onSummaryGenerated(summary);
-        } else {
-          throw new Error('Received empty summary from API');
-        }
-      } else {
-        throw new Error('No content available to summarize');
-      }
-    } catch (err: any) {
-      console.error('Error generating summary:', err);
-      setError('Error generating summary: ' + (err.message || 'Unknown error'));
-    } finally {
-      setSummaryLoading(false);
-    }
-  };
+  // Summary generation functionality has been removed and moved to SummaryContainer
 
   return (
     <div className="h-full flex flex-col">
       <div className="p-4 flex-shrink-0 bg-gray-900 space-y-4">
         <div>Chapter: {selectedChapter.title}</div>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
-          onClick={handleGenerateSummary}
-          disabled={summaryLoading || !rawContent}
-        >
-          {summaryLoading ? 'Loading...' : 'Generate Summary'}
-        </button>
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
         <div className="p-4 bg-gray-800">

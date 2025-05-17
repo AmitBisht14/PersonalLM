@@ -1,5 +1,7 @@
 import { Chapter } from '@/types/pdf';
 import { fetchRawPDFContent } from '@/api/pdfApi';
+import { requestSummaryGenerationApi } from '@/api/summaryApi';
+import { fetchPromptsApi } from '@/api/promptApi';
 
 /**
  * Represents raw content for a chapter
@@ -54,6 +56,26 @@ export const fetchRawChapterContents = async (chapters: Chapter[], file: File) =
     return chapterContents;
   } catch (error) {
     console.error('Error fetching chapter contents:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generates a summary for a single chapter's content
+ */
+export const generateSummaryForContent = async (content: string): Promise<string> => {
+  try {
+    // Fetch the summary prompt template
+    const prompts = await fetchPromptsApi();
+    const summaryPrompt = prompts.find(p => p.name === 'summary_prompt')?.prompt || 
+      'Please summarize the following content:';
+    
+    // Generate the summary
+    const summaryResponse = await requestSummaryGenerationApi(content, summaryPrompt);
+    
+    return summaryResponse.summary;
+  } catch (error) {
+    console.error('Error generating summary:', error);
     throw error;
   }
 };

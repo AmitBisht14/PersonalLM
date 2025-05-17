@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { PrintButton } from '@/components/ui/PrintButton';
 import { printContent } from '@/services/print/printService';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { RawChapterContent } from '@/services/summaryService';
+import { RawChapterContent, generateSummaryForContent } from '@/services/summaryService';
 
 interface SummaryItemProps {
   chapterContent: RawChapterContent;
@@ -10,15 +10,47 @@ interface SummaryItemProps {
 }
 
 export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [summary, setSummary] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
   const summaryRef = useRef<HTMLDivElement>(null);
+  
+  // Generate summary when component is expanded
+  useEffect(() => {
+    const fetchSummary = async () => {
+      if (!isCollapsed) { // Only fetch when expanded
+        try {
+          setIsLoading(true);
+          setError('');
+          const generatedSummary = await generateSummaryForContent(chapterContent.content);
+          setSummary(generatedSummary);
+        } catch (err) {
+          console.error('Error generating summary:', err);
+          setError('Failed to generate summary. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    // If we don't have a summary yet and the component is expanded, fetch it
+    if (!summary && !isCollapsed) {
+      fetchSummary();
+    }
+  }, [chapterContent, isCollapsed, summary]);
 
   const handlePrint = () => {
-    printContent(chapterContent.content, chapterContent.chapter.title);
+    // If summary is available, print that; otherwise print raw content
+    const contentToPrint = summary || chapterContent.content;
+    printContent(contentToPrint, chapterContent.chapter.title);
   };
 
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+    const newCollapsedState = !isCollapsed;
+    setIsCollapsed(newCollapsedState);
+    
+    // If we're expanding and don't have a summary yet, we'll trigger the fetch in useEffect
   };
 
   return (
@@ -33,7 +65,9 @@ export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">{new Date().toLocaleTimeString()}</span>
+          <span className={`text-xs ${isLoading ? 'text-yellow-400' : summary ? 'text-green-400' : 'text-gray-400'}`}>
+            {isLoading ? 'Summary Generating...' : summary ? 'Summary Generated' : 'Raw Content'}
+          </span>
           <button
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
@@ -71,7 +105,21 @@ export function SummaryItem({ chapterContent, onDelete }: SummaryItemProps) {
       {/* Content area - collapsible */}
       {!isCollapsed && (
         <div className="p-4" ref={summaryRef}>
-          <div className="whitespace-pre-wrap text-gray-100">{chapterContent.content}</div>
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+              <p className="text-gray-400">Generating summary...</p>
+            </div>
+          ) : error ? (
+            <div className="text-red-400 py-4">{error}</div>
+          ) : summary ? (
+            <div className="whitespace-pre-wrap text-gray-100">
+              <h4 className="text-lg font-medium text-blue-400 mb-2">Summary</h4>
+              {summary}
+            </div>
+          ) : (
+            <div className="whitespace-pre-wrap text-gray-100">{chapterContent.content}</div>
+          )}
         </div>
       )}
     </div>

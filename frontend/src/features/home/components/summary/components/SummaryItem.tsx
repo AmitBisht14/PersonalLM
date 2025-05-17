@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { PrintButton } from '@/components/ui/PrintButton';
 import { printContent } from '@/services/print/printService';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -19,62 +19,50 @@ export function SummaryItem({ chapterContent, onDelete, summaryPrompt, isPromptL
   const hasStartedGeneration = useRef(false);
   const summaryRef = useRef<HTMLDivElement>(null);
   
-  // Generate summary when we have the prompt and content
+  // Define the generate summary function with useCallback to ensure stability
+  const generateSummary = useCallback(async () => {
+    // Skip if we already have a summary, are already loading, have started generation, or don't have the prompt yet
+    if (summary || isLoading || hasStartedGeneration.current || !summaryPrompt || isPromptLoading) return;
+    
+    // Mark that we've started generation to prevent duplicate calls
+    hasStartedGeneration.current = true;
+    console.log('Starting summary generation for:', chapterContent.chapter.title);
+    
+    try {
+      // Set loading state first
+      setIsLoading(true);
+      setError('');
+      
+      // Generate the summary using the prompt passed from parent
+      const generatedSummary = await generateSummaryForContent(chapterContent.content, summaryPrompt);
+      console.log('Summary generated successfully:', generatedSummary.substring(0, 50) + '...');
+      
+      // Update summary first, then set loading to false
+      setSummary(generatedSummary);
+      // Auto-expand when summary is ready
+      setIsCollapsed(false);
+      console.log('Summary set and item expanded');
+    } catch (err) {
+      console.error('Error generating summary:', err);
+      setError('Failed to generate summary. Please try again.');
+      // Reset the flag so we can try again
+      hasStartedGeneration.current = false;
+    } finally {
+      // Ensure loading state is updated last
+      setIsLoading(false);
+      console.log('Loading state set to false');
+    }
+  }, [chapterContent.chapter.title, chapterContent.content, isLoading, isPromptLoading, setIsCollapsed, setIsLoading, setSummary, setError, summary, summaryPrompt]);
+  
+  // Effect to trigger summary generation when component mounts or dependencies change
   useEffect(() => {
-    let isMounted = true; // Flag to prevent state updates after unmount
+    // Only generate summary if we have the necessary data and haven't already generated it
+    if (!summary && !isLoading && !hasStartedGeneration.current && summaryPrompt && !isPromptLoading) {
+      generateSummary();
+    }
     
-    const generateSummary = async () => {
-      // Skip if we already have a summary, are already loading, have started generation, or don't have the prompt yet
-      if (summary || isLoading || hasStartedGeneration.current || !summaryPrompt || isPromptLoading) return;
-      
-      // Mark that we've started generation to prevent duplicate calls
-      hasStartedGeneration.current = true;
-      console.log('Starting summary generation for:', chapterContent.chapter.title);
-      
-      try {
-        // Set loading state first
-        setIsLoading(true);
-        setError('');
-        
-        // Generate the summary using the prompt passed from parent
-        const generatedSummary = await generateSummaryForContent(chapterContent.content, summaryPrompt);
-        console.log('Summary generated successfully:', generatedSummary.substring(0, 50) + '...');
-        
-        // Only update state if component is still mounted
-        if (isMounted) {
-          // Update summary first, then set loading to false
-          setSummary(generatedSummary);
-          // Auto-expand when summary is ready
-          setIsCollapsed(false);
-          console.log('Summary set and item expanded');
-        }
-      } catch (err) {
-        console.error('Error generating summary:', err);
-        if (isMounted) {
-          setError('Failed to generate summary. Please try again.');
-          // Reset the flag so we can try again
-          hasStartedGeneration.current = false;
-        }
-      } finally {
-        // Ensure loading state is updated last
-        if (isMounted) {
-          // Use setTimeout to ensure this happens after state updates
-          setTimeout(() => {
-            setIsLoading(false);
-            console.log('Loading state set to false');
-          }, 0);
-        }
-      }
-    };
-    
-    // Start generating summary as soon as we have both the prompt and raw content
-    generateSummary();
-    
-    // Cleanup function to prevent state updates after unmount
-    return () => {
-      isMounted = false;
-    };
-  }, [chapterContent.chapter.title, summaryPrompt, isPromptLoading]);
+    // No cleanup needed as we're using useCallback for the function
+  }, [generateSummary, summary, isLoading, summaryPrompt, isPromptLoading]);
 
   const handlePrint = () => {
     // If summary is available, print that; otherwise print raw content
@@ -122,6 +110,8 @@ export function SummaryItem({ chapterContent, onDelete, summaryPrompt, isPromptL
             <button 
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
+                // Prevent event bubbling and prevent summary regeneration
+                e.preventDefault();
                 // Use the chapter title as an identifier since Chapter doesn't have an id property
                 onDelete(chapterContent.chapter.title);
               }}

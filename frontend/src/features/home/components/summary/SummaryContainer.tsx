@@ -3,7 +3,7 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Chapter } from '@/types/pdf';
 import { SummaryItem } from './components/SummaryItem';
-import { fetchRawChapterContents, ChapterContent } from '@/services/summaryService';
+import { fetchRawChapterContents, RawChapterContent } from '@/services/summaryService';
 
 export interface SummaryData {
   id: string;
@@ -12,7 +12,7 @@ export interface SummaryData {
   timestamp: string;
   pageCount?: number;
   chapterCount?: number;
-  chapterContents?: ChapterContent[];
+  chapterContents?: RawChapterContent[];
 }
 
 interface SummaryContainerProps {

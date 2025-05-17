@@ -2,9 +2,9 @@ import { Chapter } from '@/types/pdf';
 import { fetchRawPDFContent } from '@/api/pdfApi';
 
 /**
- * Generates a summary for the provided chapters
+ * Represents raw content for a chapter
  */
-export interface ChapterContent {
+export interface RawChapterContent {
   chapter: Chapter;
   content: string;
 }
@@ -12,7 +12,7 @@ export interface ChapterContent {
 /**
  * Fetches raw PDF content for a single chapter
  */
-const fetchChapterContent = async (chapter: Chapter, file: File): Promise<string> => {
+const fetchRawChapterContent = async (chapter: Chapter, file: File): Promise<string> => {
   try {
     const rawContent = await fetchRawPDFContent(
       file,
@@ -30,12 +30,12 @@ const fetchChapterContent = async (chapter: Chapter, file: File): Promise<string
  * Fetches raw PDF content for all selected chapters sequentially and returns an array
  * of chapter content objects
  */
-const fetchAllChaptersContent = async (chapters: Chapter[], file: File): Promise<Array<{ chapter: Chapter, content: string }>> => {
+const fetchAllChaptersRawContent = async (chapters: Chapter[], file: File): Promise<RawChapterContent[]> => {
   const chapterContents = [];
   
   // Process chapters sequentially
   for (const chapter of chapters) {
-    const chapterContent = await fetchChapterContent(chapter, file);
+    const chapterContent = await fetchRawChapterContent(chapter, file);
     chapterContents.push({
       chapter,
       content: chapterContent
@@ -50,7 +50,7 @@ const fetchAllChaptersContent = async (chapters: Chapter[], file: File): Promise
  */
 export const fetchRawChapterContents = async (chapters: Chapter[], file: File) => {
   try {
-    const chapterContents = await fetchAllChaptersContent(chapters, file);
+    const chapterContents = await fetchAllChaptersRawContent(chapters, file);
     return chapterContents;
   } catch (error) {
     console.error('Error fetching chapter contents:', error);

@@ -3,7 +3,11 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Chapter } from '@/types/pdf';
 import { SummaryItem } from './components/SummaryItem';
-import { fetchRawChapterContents, RawChapterContent, fetchSummaryPrompt } from '@/services/summaryService';
+import { 
+  RawChapterContent, 
+  fetchAndProcessChapterContents, 
+  loadSummaryPromptWithState 
+} from '@/services/summaryService';
 
 // Interface no longer needed as we're directly using RawChapterContent
 
@@ -27,22 +31,15 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
 
   // Fetch the summary prompt once when the component mounts
   useEffect(() => {
-    const loadSummaryPrompt = async () => {
-      if (summaryPrompt) return; // Skip if we already have the prompt
-      
-      try {
-        setIsPromptLoading(true);
-        const prompt = await fetchSummaryPrompt();
-        setSummaryPrompt(prompt);
-      } catch (error) {
-        console.error('Error loading summary prompt:', error);
-      } finally {
-        setIsPromptLoading(false);
-      }
+    const loadPrompt = async () => {
+      setIsPromptLoading(true);
+      const { prompt, isLoading } = await loadSummaryPromptWithState(summaryPrompt);
+      setSummaryPrompt(prompt);
+      setIsPromptLoading(isLoading);
     };
 
-    loadSummaryPrompt();
-  }, [summaryPrompt]);
+    loadPrompt();
+  }, []);
 
   // Expose the fetchChapterContents function via ref
   useImperativeHandle(ref, () => ({
@@ -63,21 +60,25 @@ export const SummaryContainer = forwardRef<SummaryContainerHandle, SummaryContai
         return;
       }
       
-      // Log the selected chapter information
-      console.log('Selected chapters received in SummaryContainer:', chaptersToUse);
-      
-      // Set loading state
+      // UI-related state update
       setIsGenerating(true);
       
-      // Fetch chapter contents using the service
-      const allChapterRawContent = await fetchRawChapterContents(chaptersToUse, pdfFile);
-      console.log('allChapterRawContent', allChapterRawContent);
+      // Call the service function to handle the business logic
+      const contents = await fetchAndProcessChapterContents(chaptersToUse, pdfFile);
       
-      // Update state with the fetched raw chapter contents
-      setChapterContents(allChapterRawContent);
+      // Update state with new chapter contents - UI logic only
+      setChapterContents(prevContents => {
+        // Create a set of existing chapter titles for quick lookup
+        const existingTitles = new Set(prevContents.map(item => item.chapter.title));
+        
+        // Filter out any new chapters that already exist in the list
+        const newContents = contents.filter(item => !existingTitles.has(item.chapter.title));
+        
+        // Combine existing and new contents
+        return [...prevContents, ...newContents];
+      });
     } catch (error) {
-      console.error('Error in fetchChapterContents:', error);
-      // Handle error appropriately - could add error state or notification here
+      console.error('Error fetching chapter contents:', error);
     } finally {
       setIsGenerating(false);
     }

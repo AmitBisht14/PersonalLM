@@ -1,19 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Chapter } from '@/types/pdf';
-import { fetchPDFContent } from '@/services/pdfService';
-
-interface PDFContent {
-  filename: string;
-  start_page: number;
-  end_page: number;
-  total_pages: number;
-  pages: Array<{
-    page_number: number;
-    text: string;
-  }>;
-}
+import { PDFSidebar } from './PDFSidebar';
 
 interface PDFViewerProps {
   pdfFile: File;
@@ -23,65 +12,56 @@ interface PDFViewerProps {
     chapters: Chapter[];
   };
   selectedChapter: Chapter;
+  isCollapsed?: boolean;
+  onCollapse?: () => void;
 }
 
-export function PDFViewer({ pdfFile, pdfStructure, selectedChapter }: PDFViewerProps) {
-  const [loading, setLoading] = useState(false);
-  const [content, setContent] = useState<PDFContent | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export function PDFViewer({ 
+  pdfFile, 
+  pdfStructure, 
+  selectedChapter,
+  isCollapsed = false,
+  onCollapse = () => {}
+}: PDFViewerProps) {
+  const [showSidebar, setShowSidebar] = useState(true);
 
-  useEffect(() => {
-    // Reset state when PDF file changes
-    setContent(null);
-    setError(null);
-  }, [pdfFile]);
-
-  useEffect(() => {
-    // Load content when chapter changes
-    const loadChapterContent = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Only fetch formatted content
-        const { content: formattedContent } = await fetchPDFContent(
-          pdfFile, 
-          selectedChapter.start_page, 
-          selectedChapter.end_page || selectedChapter.start_page
-        );
-        console.log('Received content:', formattedContent);
-        setContent(formattedContent);
-      } catch (err: any) {
-        console.error('Error loading content:', err);
-        setError(err.message || 'Error fetching PDF content');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadChapterContent();
-  }, [selectedChapter, pdfFile]);
-
-  // Summary generation functionality has been removed and moved to SummaryContainer
+  const handleSidebarToggle = () => {
+    if (onCollapse) {
+      onCollapse();
+    } else {
+      setShowSidebar(!showSidebar);
+    }
+  };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 flex-shrink-0 bg-gray-900 space-y-4">
-        <div>Chapter: {selectedChapter.title}</div>
-      </div>
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-        <div className="p-4 bg-gray-800">
-          {loading && <div className="text-blue-300">Loading content...</div>}
-          {error && <div className="text-red-300">{error}</div>}
-          {content && !loading && !error && (
-            <div className="space-y-8">
-              {content.pages.map((page) => (
-                <div key={page.page_number} className="pb-8 border-b border-gray-700 last:border-0">
-                  <h3 className="text-blue-300 font-semibold mb-2">Page {page.page_number}</h3>
-                  <div className="whitespace-pre-wrap text-gray-100">{page.text}</div>
+    <div className="h-full flex">
+      <PDFSidebar
+        pdfFile={pdfFile}
+        pdfStructure={pdfStructure}
+        selectedChapter={selectedChapter}
+        isCollapsed={isCollapsed || !showSidebar}
+        onCollapse={handleSidebarToggle}
+      />
+      
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="p-4 flex-shrink-0 bg-gray-900 border-b border-gray-700">
+          <h2 className="text-lg font-semibold text-white">{selectedChapter.title}</h2>
+          <div className="text-xs text-gray-400 mt-1">
+            Pages {selectedChapter.start_page} - {selectedChapter.end_page}
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 p-6 bg-gray-800">
+          <div className="max-w-4xl mx-auto">
+            <div className="prose prose-invert prose-lg">
+              <div className="whitespace-pre-wrap">
+                {/* Content will be loaded in the sidebar, this is just the reading view */}
+                <div className="text-gray-300 text-center py-8">
+                  <p>Select a page from the sidebar to view its content here.</p>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

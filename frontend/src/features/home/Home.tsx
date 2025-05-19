@@ -88,6 +88,8 @@ export function Home() {
                   pdfFile={selectedPDF.file}
                   pdfStructure={selectedPDF.structure}
                   selectedChapter={chapterForViewer}
+                  isCollapsed={isStudioCollapsed}
+                  onCollapse={handleStudioCollapse}
                 />
               </div>
             ) : null

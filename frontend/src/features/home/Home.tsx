@@ -9,7 +9,6 @@ import { PDFViewer } from './components/pdf/PDFViewer';
 import { PanelLayout } from '@/components/layout/PanelLayout';
 
 export function Home() {
-  const sourcesRef = useRef<ImperativePanelHandle>(null);
   const studioRef = useRef<ImperativePanelHandle>(null);
   const summaryContainerRef = useRef<any>(null);
   const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
@@ -25,11 +24,6 @@ export function Home() {
   const [selectedChapters, setSelectedChapters] = useState<Chapter[] | null>(null);
 
   const handleSourcesCollapse = () => {
-    if (!isSourcesCollapsed) {
-      sourcesRef.current?.resize(0);
-    } else {
-      sourcesRef.current?.resize(25);
-    }
     setIsSourcesCollapsed(!isSourcesCollapsed);
   };
 
@@ -37,7 +31,7 @@ export function Home() {
     if (!isStudioCollapsed) {
       studioRef.current?.resize(0);
     } else {
-      studioRef.current?.resize(25);
+      studioRef.current?.resize(40);
     }
     setIsStudioCollapsed(!isStudioCollapsed);
   };
@@ -57,59 +51,49 @@ export function Home() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-900 text-gray-100">
-      <PanelLayout
-        leftPanel={{
-          ref: sourcesRef,
-          defaultSize: 25,
-          minSize: 0,
-          maxSize: 40,
-          isCollapsed: isSourcesCollapsed,
-          onCollapse: handleSourcesCollapse,
-          collapseDirection: 'right',
-          children: (
-            <div className="flex flex-col h-full">
-              <FileSource 
-                onCollapse={handleSourcesCollapse} 
-                isCollapsed={isSourcesCollapsed}
-                onFileStructure={handleFileStructure}
-                selectedPDF={selectedPDF}
-                onChapterSelect={handleChapterSelect}
-                onGenerateSummary={(chapters) => {
-                  if (summaryContainerRef.current) {
-                    summaryContainerRef.current.fetchChapterContents(chapters);
-                  }
-                }}
-              />
-            </div>
-          )
-        }}
-        centerPanel={{
-          defaultSize: 50,
-          minSize: 20,
-          children: <SummaryContainer 
-            ref={summaryContainerRef}
-            pdfFile={selectedPDF?.file}
-          />
-        }}
-        rightPanel={{
-          ref: studioRef,
-          defaultSize: 25,
-          minSize: 0,
-          maxSize: 40,
-          isCollapsed: isStudioCollapsed,
-          onCollapse: handleStudioCollapse,
-          collapseDirection: 'left',
-          children: selectedPDF && chapterForViewer ? (
-            <div id="pdf-content-viewer" className="h-full overflow-hidden">
-              <PDFViewer 
-                pdfFile={selectedPDF.file}
-                pdfStructure={selectedPDF.structure}
-                selectedChapter={chapterForViewer}
-              />
-            </div>
-          ) : null
+      <FileSource 
+        onCollapse={handleSourcesCollapse} 
+        isCollapsed={isSourcesCollapsed}
+        onFileStructure={handleFileStructure}
+        selectedPDF={selectedPDF}
+        onChapterSelect={handleChapterSelect}
+        onGenerateSummary={(chapters) => {
+          if (summaryContainerRef.current) {
+            summaryContainerRef.current.fetchChapterContents(chapters);
+          }
         }}
       />
+      
+      <div className="flex-1 flex">
+        <PanelLayout
+          centerPanel={{
+            defaultSize: 60,
+            minSize: 30,
+            children: <SummaryContainer 
+              ref={summaryContainerRef}
+              pdfFile={selectedPDF?.file}
+            />
+          }}
+          rightPanel={{
+            ref: studioRef,
+            defaultSize: 40,
+            minSize: 0,
+            maxSize: 70,
+            isCollapsed: isStudioCollapsed,
+            onCollapse: handleStudioCollapse,
+            collapseDirection: 'left',
+            children: selectedPDF && chapterForViewer ? (
+              <div id="pdf-content-viewer" className="h-full overflow-hidden">
+                <PDFViewer 
+                  pdfFile={selectedPDF.file}
+                  pdfStructure={selectedPDF.structure}
+                  selectedChapter={chapterForViewer}
+                />
+              </div>
+            ) : null
+          }}
+        />
+      </div>
     </div>
   );
 }

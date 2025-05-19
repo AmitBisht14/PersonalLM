@@ -19,13 +19,13 @@ interface PDFContent {
 }
 
 interface PDFViewerProps {
-  pdfFile: File;
+  pdfFile: File | null;
   pdfStructure: {
     filename: string;
     total_pages: number;
     chapters: Chapter[];
-  };
-  selectedChapter: Chapter;
+  } | null;
+  selectedChapter: Chapter | null;
   isCollapsed?: boolean;
   onCollapse?: () => void;
 }
@@ -52,6 +52,8 @@ export function PDFViewer({
   useEffect(() => {
     // Load content when chapter changes
     const loadChapterContent = async () => {
+      if (!pdfFile || !selectedChapter) return;
+      
       setLoading(true);
       setError(null);
       try {
@@ -81,34 +83,53 @@ export function PDFViewer({
   // Get the selected page content
   const selectedPageContent = content?.pages.find(page => page.page_number === selectedPage);
 
+  // Empty UI when no PDF or chapter is selected
+  if (!pdfFile || !pdfStructure || !selectedChapter) {
+    return (
+      <div className="flex h-full">
+        <Sidebar
+          isOpen={!isCollapsed}
+          onToggle={onCollapse}
+          title="PDF Viewer"
+        >
+          <SidebarContent>
+            <div className="p-6 text-center text-gray-400">
+              <p>No PDF selected</p>
+              <p className="text-sm mt-2">Upload and select a PDF chapter to view content</p>
+            </div>
+          </SidebarContent>
+          <SidebarFooter>
+            <div className="text-xs text-gray-400 text-center">
+              PDF Viewer
+            </div>
+          </SidebarFooter>
+        </Sidebar>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-full flex">
+    <div className="flex h-full">
       <Sidebar
         isOpen={!isCollapsed}
         onToggle={onCollapse}
         title="PDF Viewer"
       >
         <SidebarContent>
-          <SidebarSection>
-            <span className="text-blue-300 font-medium truncate">{selectedChapter.title}</span>
-          </SidebarSection>
-          <SidebarSection>
-            {loading && <div className="text-blue-400 text-sm">Loading content...</div>}
-            {error && <div className="text-red-400 text-sm p-2 bg-red-900/20 rounded border border-red-800/50">{error}</div>}
+          <SidebarSection title={selectedChapter.title}>
+            {loading && <div className="text-blue-400 p-4">Loading content...</div>}
+            {error && <div className="text-red-400 p-4">{error}</div>}
             
-            {content && !loading && !error && (
-              <div className="space-y-4">
+            {!loading && !error && content && content.pages && (
+              <div className="space-y-4 p-2">
                 {content.pages.map((page) => (
                   <div 
-                    key={page.page_number} 
-                    className={`border border-gray-700 rounded-md overflow-hidden ${selectedPage === page.page_number ? 'bg-gray-700/50' : 'bg-gray-800/30'} hover:bg-gray-700/30 transition-colors cursor-pointer`}
+                    key={page.page_number}
+                    className={`p-3 rounded-md cursor-pointer transition-colors ${selectedPage === page.page_number ? 'bg-gray-700' : 'hover:bg-gray-700/50'}`}
                     onClick={() => setSelectedPage(page.page_number)}
                   >
-                    <div className="flex items-center gap-2 p-2 border-b border-gray-700 bg-gray-800/50">
-                      <BookOpen className="h-4 w-4 text-blue-400" />
-                      <h4 className="text-xs font-medium text-blue-300">Page {page.page_number}</h4>
-                    </div>
-                    <div className="p-3 text-xs text-gray-300 whitespace-pre-wrap max-h-48 overflow-y-auto">
+                    <div className="text-xs text-gray-400 mb-1">Page {page.page_number}</div>
+                    <div className="text-sm text-gray-300 line-clamp-3">
                       {page.text.length > 300 
                         ? `${page.text.substring(0, 300)}...` 
                         : page.text}

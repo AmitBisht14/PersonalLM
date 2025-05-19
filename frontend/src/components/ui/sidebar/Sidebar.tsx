@@ -21,7 +21,7 @@ export function Sidebar({ children, isOpen, onToggle, title }: SidebarProps) {
     >
       {isOpen ? (
         <>
-          <div className="flex items-center justify-between p-4 border-b border-gray-700">
+          <div className="flex items-center justify-between p-4 border-b border-gray-700 flex-shrink-0">
             <h2 className="font-semibold text-lg text-white">{title}</h2>
             <button
               onClick={onToggle}
@@ -31,7 +31,7 @@ export function Sidebar({ children, isOpen, onToggle, title }: SidebarProps) {
               <ChevronLeft className="h-5 w-5" />
             </button>
           </div>
-          <div className="flex-1 overflow-auto">
+          <div className="flex flex-col flex-1 overflow-hidden">
             {children}
           </div>
         </>

@@ -8,8 +8,8 @@ interface SidebarContentProps {
 
 export function SidebarContent({ children }: SidebarContentProps) {
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-grow overflow-y-auto p-4">
+    <div className="flex-1 overflow-y-auto">
+      <div className="p-4">
         {children}
       </div>
     </div>
@@ -27,7 +27,7 @@ export function SidebarSection({ children, title }: { children: ReactNode; title
 
 export function SidebarFooter({ children }: { children: ReactNode }) {
   return (
-    <div className="border-t border-gray-700 p-4 bg-gray-800">
+    <div className="border-t border-gray-700 p-4 bg-gray-800 mt-auto flex-shrink-0">
       {children}
     </div>
   );

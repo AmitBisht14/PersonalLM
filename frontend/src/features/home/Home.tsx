@@ -4,10 +4,12 @@ import { useRef, useState } from 'react';
 import { FileSource } from './components/sources/fileSource';
 import { SummaryContainer } from './components/summary/SummaryContainer';
 import { Chapter } from '@/types/pdf';
+import { PDFSidebar } from './components/pdf/PDFSidebar';
 
 export function Home() {
   const summaryContainerRef = useRef<any>(null);
   const [isSourcesCollapsed, setIsSourcesCollapsed] = useState(false);
+  const [isPdfSidebarCollapsed, setIsPdfSidebarCollapsed] = useState(false); // Initial state is not collapsed
   const [selectedPDF, setSelectedPDF] = useState<{ 
     file: File; 
     structure: { 
@@ -20,6 +22,10 @@ export function Home() {
 
   const handleSourcesCollapse = () => {
     setIsSourcesCollapsed(!isSourcesCollapsed);
+  };
+  
+  const handlePdfSidebarCollapse = () => {
+    setIsPdfSidebarCollapsed(!isPdfSidebarCollapsed);
   };
 
   const handleFileStructure = (file: File | null, structure: { filename: string; total_pages: number; chapters: Chapter[] } | null) => {
@@ -50,11 +56,23 @@ export function Home() {
         }}
       />
       
-      <div className="flex-1">
-        <SummaryContainer 
-          ref={summaryContainerRef}
-          pdfFile={selectedPDF?.file}
-        />
+      <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 overflow-auto">
+          <SummaryContainer 
+            ref={summaryContainerRef}
+            pdfFile={selectedPDF?.file}
+          />
+        </div>
+        
+        {selectedPDF && selectedChapters && selectedChapters.length > 0 && (
+          <PDFSidebar
+            pdfFile={selectedPDF.file}
+            pdfStructure={selectedPDF.structure}
+            selectedChapter={selectedChapters[0]}
+            isCollapsed={isPdfSidebarCollapsed}
+            onCollapse={handlePdfSidebarCollapse}
+          />
+        )}
       </div>
     </div>
   );

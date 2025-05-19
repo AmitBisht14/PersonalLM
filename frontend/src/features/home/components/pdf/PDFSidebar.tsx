@@ -80,29 +80,9 @@ export function PDFSidebar({
     >
       <SidebarContent>
         <SidebarSection>
-          <div className="bg-gray-800/50 rounded-md p-3 border border-gray-700 mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="h-4 w-4 text-blue-500" />
-              <h3 className="text-sm font-medium text-white">{pdfStructure.filename}</h3>
-            </div>
-            <div className="flex flex-col space-y-1 text-xs">
-              <div className="flex items-center">
-                <span className="text-gray-400 w-24">Total Pages:</span>
-                <span className="text-gray-200">{pdfStructure.total_pages}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-400 w-24">Current Chapter:</span>
-                <span className="text-blue-300 font-medium truncate">{selectedChapter.title}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-400 w-24">Page Range:</span>
-                <span className="text-gray-200">{selectedChapter.start_page} - {selectedChapter.end_page}</span>
-              </div>
-            </div>
-          </div>
+          <span className="text-blue-300 font-medium truncate">{selectedChapter.title}</span>
         </SidebarSection>
-
-        <SidebarSection title="Content">
+        <SidebarSection>
           {loading && <div className="text-blue-400 text-sm">Loading content...</div>}
           {error && <div className="text-red-400 text-sm p-2 bg-red-900/20 rounded border border-red-800/50">{error}</div>}
           

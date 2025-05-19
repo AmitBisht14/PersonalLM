@@ -64,14 +64,13 @@ export function Home() {
           />
         </div>
         
-        
-          <PDFViewer
-            pdfFile={selectedPDF?.file || null}
-            pdfStructure={selectedPDF?.structure || null}
-            selectedChapter={selectedChapters && selectedChapters.length > 0 ? selectedChapters[0] : null}
-            isCollapsed={isPdfSidebarCollapsed}
-            onCollapse={handlePdfSidebarCollapse}
-          />
+        <PDFViewer
+          pdfFile={selectedPDF?.file || null}
+          pdfStructure={selectedPDF?.structure || null}
+          selectedChapter={selectedChapters && selectedChapters.length > 0 ? selectedChapters[0] : null}
+          isCollapsed={isPdfSidebarCollapsed}
+          onCollapse={handlePdfSidebarCollapse}
+        />
       </div>
     </div>
   );

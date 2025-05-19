@@ -126,36 +126,6 @@ export function PDFViewer({
           </div>
         </SidebarFooter>
       </Sidebar>
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="p-4 flex-shrink-0 bg-gray-900 border-b border-gray-700">
-          <h2 className="text-lg font-semibold text-white">{selectedChapter.title}</h2>
-          {selectedPageContent && (
-            <div className="text-xs text-gray-400 mt-1">
-              Page {selectedPageContent.page_number} of {selectedChapter.end_page - selectedChapter.start_page + 1}
-            </div>
-          )}
-        </div>
-        
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 p-6 bg-gray-800">
-          <div className="max-w-4xl mx-auto">
-            <div className="prose prose-invert prose-lg">
-              {loading && <div className="text-blue-400">Loading content...</div>}
-              {error && <div className="text-red-400 p-4 bg-red-900/20 rounded border border-red-800/50">{error}</div>}
-              
-              {!loading && !error && selectedPageContent ? (
-                <div className="whitespace-pre-wrap">
-                  {selectedPageContent.text}
-                </div>
-              ) : (
-                <div className="text-gray-300 text-center py-8">
-                  <p>Select a page from the sidebar to view its content here.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

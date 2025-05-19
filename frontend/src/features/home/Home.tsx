@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { FileSource } from './components/sources/fileSource';
 import { SummaryContainer } from './components/summary/SummaryContainer';
 import { Chapter } from '@/types/pdf';
-import { PDFSidebar } from './components/pdf/PDFSidebar';
+import { PDFViewer } from './components/pdf/PDFViewer';
 
 export function Home() {
   const summaryContainerRef = useRef<any>(null);
@@ -65,7 +65,7 @@ export function Home() {
         </div>
         
         {selectedPDF && selectedChapters && selectedChapters.length > 0 && (
-          <PDFSidebar
+          <PDFViewer
             pdfFile={selectedPDF.file}
             pdfStructure={selectedPDF.structure}
             selectedChapter={selectedChapters[0]}

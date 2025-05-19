@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { FileUploadComponent } from './components/fileupload';
 import { ToastType } from '@/components/ui/toast/Toast';
 import { Chapter } from '@/types/pdf';
-import { FileStructure } from './components/fileStructure'; // Import FileStructure
-import { GenerateSummary } from './components/GenerateSummary'; // Import GenerateSummary
+import { FileStructure } from './components/fileStructure';
+import { GenerateSummary } from './components/GenerateSummary';
 import { analyzePdfStructure } from '@/services/pdfStructureService';
+import { Sidebar } from '@/components/ui/sidebar/Sidebar';
+import { SidebarContent, SidebarSection, SidebarFooter } from '@/components/ui/sidebar/SidebarContent';
 
 interface SelectedPDFType {
   file: File;
@@ -21,9 +23,9 @@ interface FileSourceProps {
   onCollapse: () => void;
   isCollapsed: boolean;
   onFileStructure?: (file: File | null, structure: { filename: string; total_pages: number; chapters: Chapter[] } | null) => void;
-  selectedPDF: SelectedPDFType | null; // Add selectedPDF prop
-  onChapterSelect: (chapters: Chapter[]) => void; // Add onChapterSelect prop
-  onGenerateSummary?: (chapters: Chapter[]) => void; // Add prop for summary generation
+  selectedPDF: SelectedPDFType | null;
+  onChapterSelect: (chapters: Chapter[]) => void;
+  onGenerateSummary?: (chapters: Chapter[]) => void;
 }
 
 export function FileSource({ 
@@ -70,7 +72,6 @@ export function FileSource({
   };
 
   const handleTestClick = () => {
-    // Simply pass the selected chapters to the onGenerateSummary callback
     if (selectedCheckboxes.length > 0 && onGenerateSummary) {
       onGenerateSummary(selectedCheckboxes);
     }
@@ -81,32 +82,13 @@ export function FileSource({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header - fixed height */}
-      <div className="flex justify-between items-center p-4 border-b border-gray-700 flex-shrink-0">
-        <h2 className="text-lg font-semibold text-white">Sources</h2>
-        <button 
-          onClick={onCollapse} 
-          className="p-1.5 hover:bg-gray-700 rounded-md text-gray-400 hover:text-white transition-colors"
-          aria-label="Collapse Sources Panel"
-        >
-          {/* Use the correct icon based on isCollapsed state */}
-          {isCollapsed ? (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m15 18-6-6 6-6"/>
-            </svg>
-          )}
-        </button>
-      </div>
-
-      {/* Scrollable content area - takes remaining height */}
-      <div className="flex-grow overflow-y-auto p-4">
-        {/* Upload component - fixed height */}
-        <div className="mb-4">
+    <Sidebar
+      isOpen={!isCollapsed}
+      onToggle={onCollapse}
+      title="Sources"
+    >
+      <SidebarContent>
+        <SidebarSection title="Upload PDF">
           <FileUploadComponent
             onFileSelect={handleFileSelect}
             onFileRemove={handleFileRemove}
@@ -114,25 +96,25 @@ export function FileSource({
             toast={toast}
             onToastClose={() => setToast(null)}
           />
-        </div>
+        </SidebarSection>
         
-        {/* FileStructure - will expand naturally */}
         {selectedPDF && (
-          <div>
+          <SidebarSection>
             <FileStructure 
               structure={selectedPDF.structure}
               onChapterSelect={onChapterSelect}
               onMultiSelectChange={handleMultiSelectChange}
             />
-          </div>
+          </SidebarSection>
         )}
-      </div>
+      </SidebarContent>
 
-      {/* Footer - fixed height */}
-      <GenerateSummary 
-        selectedChapters={selectedCheckboxes}
-        onTestClick={handleTestClick}
-      />
-    </div>
+      <SidebarFooter>
+        <GenerateSummary 
+          selectedChapters={selectedCheckboxes}
+          onTestClick={handleTestClick}
+        />
+      </SidebarFooter>
+    </Sidebar>
   );
 }

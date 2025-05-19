@@ -91,6 +91,7 @@ export function PDFViewer({
           isOpen={!isCollapsed}
           onToggle={onCollapse}
           title="PDF Viewer"
+          position="right"
         >
           <SidebarContent>
             <div className="p-6 text-center text-gray-400">
@@ -114,6 +115,7 @@ export function PDFViewer({
         isOpen={!isCollapsed}
         onToggle={onCollapse}
         title="PDF Viewer"
+        position="right"
       >
         <SidebarContent>
           <SidebarSection title={selectedChapter.title}>

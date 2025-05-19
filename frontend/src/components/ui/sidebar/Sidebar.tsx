@@ -8,9 +8,10 @@ interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   title: string;
+  position?: 'left' | 'right';
 }
 
-export function Sidebar({ children, isOpen, onToggle, title }: SidebarProps) {
+export function Sidebar({ children, isOpen, onToggle, title, position = 'left' }: SidebarProps) {
   return (
     <div 
       className={`
@@ -28,7 +29,11 @@ export function Sidebar({ children, isOpen, onToggle, title }: SidebarProps) {
               className="p-1 rounded-md hover:bg-gray-700 hover:text-white transition-colors"
               aria-label="Close sidebar"
             >
-              <ChevronLeft className="h-5 w-5" />
+              {position === 'left' ? (
+                <ChevronLeft className="h-5 w-5" />
+              ) : (
+                <ChevronRight className="h-5 w-5" />
+              )}
             </button>
           </div>
           <div className="flex flex-col flex-1 overflow-hidden">
@@ -43,7 +48,11 @@ export function Sidebar({ children, isOpen, onToggle, title }: SidebarProps) {
               className="p-1 rounded-md hover:bg-gray-700 text-blue-400 hover:text-blue-300 transition-colors"
               aria-label="Open sidebar"
             >
-              <ChevronRight className="h-5 w-5" />
+              {position === 'left' ? (
+                <ChevronRight className="h-5 w-5" />
+              ) : (
+                <ChevronLeft className="h-5 w-5" />
+              )}
             </button>
           </div>
           <div className="flex-1 flex items-center justify-center">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, ChangeEvent } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import { Chapter } from '../../../../../types/pdf';
 
 interface FileStructureProps {
@@ -50,65 +50,94 @@ export function FileStructure({ structure, onChapterSelect, onMultiSelectChange 
   };
 
   return (
-    // Removed min-h-0 and overflow-y-auto. Parent (in FileSource.tsx) should handle scrolling.
-    <div className="bg-gray-800 rounded-lg p-4">
-      <h3 className="text-base font-bold text-white mb-2">File Structure</h3>
-      <div className="text-xs text-gray-300 mb-2 flex items-center">Title: <span className="font-mono ml-1 truncate max-w-[200px] inline-block" title={pdfTitle}>{pdfTitle}</span></div>
-      <div className="text-xs text-gray-300 mb-4">Total Pages: {structure.total_pages}</div>
-      <div className="space-y-2">
+    <div className="rounded-md">
+      <div className="flex items-center gap-2 mb-3">
+        <FileText className="h-4 w-4 text-blue-500" />
+        <h3 className="text-base font-semibold text-white">File Structure</h3>
+      </div>
+      
+      <div className="bg-gray-800/50 rounded-md p-3 mb-3 border border-gray-700">
+        <div className="flex flex-col space-y-1">
+          <div className="flex items-center text-xs">
+            <span className="text-gray-400 w-16">Title:</span>
+            <span className="font-mono truncate max-w-[200px] inline-block text-gray-200" title={pdfTitle}>
+              {pdfTitle}
+            </span>
+          </div>
+          <div className="flex items-center text-xs">
+            <span className="text-gray-400 w-16">Pages:</span>
+            <span className="text-gray-200">{structure.total_pages}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="space-y-1.5">
         {structure.chapters.map((chapter, idx) => {
           // Checkbox state is based on multiSelectedChapters
-          const isCheckedForMultiSelect = multiSelectedChapters.some(sc => sc.title === chapter.title && sc.start_page === chapter.start_page);
+          const isCheckedForMultiSelect = multiSelectedChapters.some(
+            sc => sc.title === chapter.title && sc.start_page === chapter.start_page
+          );
           
           return (
             <div 
               key={idx} 
-              // Visual indication for active selection could be handled in Home.tsx based on its selectedChapters state if needed
-              // For now, hover effect is generic.
-              className={`border-b border-gray-700 pb-2 rounded p-2 transition-colors hover:bg-gray-600 group cursor-pointer`}
-              onClick={() => handleChapterItemClick(chapter)} // Main click action for the chapter item
+              className={`
+                border border-gray-700 rounded-md overflow-hidden 
+                ${isCheckedForMultiSelect ? 'bg-gray-700/50' : 'bg-gray-800/30'} 
+                hover:bg-gray-700/70 transition-colors
+              `}
             >
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="form-checkbox h-4 w-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
-                  checked={isCheckedForMultiSelect}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    e.stopPropagation(); // Prevent div click (handleChapterItemClick)
-                    handleCheckboxChange(chapter, e.target.checked);
-                  }}
-                  onClick={(e) => e.stopPropagation()} // Extra precaution for click propagation
-                />
-                {chapter.sections.length > 0 && (
-                  <button
-                    onClick={(e) => toggleChapterSections(idx, e)} // Renamed toggleChapter to toggleChapterSections
-                    className="text-xs text-blue-400 hover:text-blue-200 focus:outline-none p-1"
-                  >
-                    {openChapters[idx] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                  </button>
+              <div 
+                className="p-2 cursor-pointer"
+                onClick={() => handleChapterItemClick(chapter)}
+              >
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-600 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900"
+                    checked={isCheckedForMultiSelect}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      e.stopPropagation();
+                      handleCheckboxChange(chapter, e.target.checked);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {chapter.sections.length > 0 && (
+                    <button
+                      onClick={(e) => toggleChapterSections(idx, e)}
+                      className="p-1 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      {openChapters[idx] ? 
+                        <ChevronDown size={16} className="text-blue-400" /> : 
+                        <ChevronRight size={16} className="text-blue-400" />
+                      }
+                    </button>
+                  )}
+                  <div className="font-medium text-blue-300 text-sm flex-grow truncate">
+                    {chapter.title}
+                  </div>
+                </div>
+                
+                <div className="text-xs text-gray-400 mt-1 pl-10">
+                  Pages: {chapter.start_page} - {chapter.end_page} 
+                  <span className="ml-1 text-gray-500">(Length: {chapter.length})</span>
+                </div>
+                
+                {chapter.sections.length > 0 && openChapters[idx] && (
+                  <div className="mt-2 ml-10 bg-gray-800/50 p-2 rounded-md border border-gray-700/50">
+                    <div className="font-medium text-green-400 text-xs mb-1">Sections:</div>
+                    <ul className="space-y-1">
+                      {chapter.sections.map((section, sidx) => (
+                        <li key={sidx} className="text-xs flex items-center gap-1">
+                          <span className="h-1 w-1 rounded-full bg-gray-500"></span>
+                          <span className="text-gray-300">{section.title}</span>
+                          <span className="text-gray-500 text-[10px]">Page {section.page_number}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
-                <div 
-                  className="font-semibold text-blue-300 text-base flex-grow"
-                  // Title click is now part of the parent div's click handler
-                >
-                  {chapter.title}
-                </div>
               </div>
-              <div className="text-xs text-gray-400 mt-1 pl-10"> {/* Adjusted indent for checkbox + expander */}
-                Pages: {chapter.start_page} - {chapter.end_page} (Length: {chapter.length})
-              </div>
-              {chapter.sections.length > 0 && openChapters[idx] && (
-                <div className="mt-2 ml-14"> {/* Further indent sections */}
-                  <div className="font-semibold text-green-300 text-xs">Sections:</div>
-                  <ul className="list-disc ml-6">
-                    {chapter.sections.map((section, sidx) => (
-                      <li key={sidx} className="text-xs text-gray-300">
-                        {section.title} <span className="text-gray-500 text-[10px]" >(Page {section.page_number})</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
           );
         })}

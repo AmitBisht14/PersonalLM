@@ -66,7 +66,7 @@ export const fetchRawChapterContents = async (chapters: Chapter[], file: File) =
 export const fetchSummaryPrompt = async (): Promise<string> => {
   try {
     const prompts = await fetchPromptsApi();
-    const summaryPrompt = prompts.find(p => p.name === 'summary_prompt')?.prompt || 
+    const summaryPrompt = prompts.find(p => p.name === 'Generate Summary')?.prompt || 
       'Please summarize the following content:';
     return summaryPrompt;
   } catch (error) {

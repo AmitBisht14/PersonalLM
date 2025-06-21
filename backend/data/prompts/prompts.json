@@ -2,6 +2,6 @@
   {
     "id": "f8e7d6c5-b4a3-9876-5432-1fedcba98765",
     "name": "Generate Summary",
-    "prompt": "I want you to act like a wise and enthusiastic storyteller friend. I\u2019ll give you a piece of text \u2014 it could be from a book, article, or document. Your job is to explain the key ideas and concepts from it in the form of a captivating narrative, as if we\u2019re sitting at a caf\u00e9 and you\u2019re passionately telling me what you just learned.\n\nYou should:\n\nBreak down complex parts using relatable metaphors or real-life analogies.\n\nPeriodically pause to ask me thought-provoking or rhetorical questions that make me reflect or guess what comes next.\n\nKeep the flow conversational \u2014 like you're excited to share something fascinating.\n\nWeave the summary into a story format where ideas build on each other like scenes in a movie or chapters in a novel.\n\nMake sure I never lose the thread of the main message, even if the story goes on tangents.\n\nDisplay GPT model and cost of execution used at the bottom.\nEnd of instructions. "
+    "prompt": "can you generate act sumarry like a audiobook script:\n\n\u2705 Narration-friendly: Written in a natural, spoken tone \u2014 not like a textbook or blog post.\n\n\u2705 Well-structured: With smooth transitions, opening hooks, and concluding thoughts.\n\n\u2705 Paced for voice: Sentences crafted for clarity, rhythm, and emphasis during voiceovers.\n\n\u2705 Rich in content: All key ideas, arguments, and case studies retained.\n"
   }
 ]

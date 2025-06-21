@@ -6,6 +6,7 @@ from app.routers import chat
 from app.pdf_processor.routers import pdf_router
 from app.configuration.routers import config_router
 from app.summary.routers.summary_router import router as summary_router
+from app.youtubeAPI.router import router as youtube_router
 from app.core.config import get_settings
 from app.models.responses import ErrorResponse
 from fastapi.openapi.docs import get_swagger_ui_html
@@ -129,6 +130,7 @@ app.include_router(chat.router, prefix="/api/v1", tags=["chat"])
 app.include_router(pdf_router.router)
 app.include_router(config_router.router)
 app.include_router(summary_router)
+app.include_router(youtube_router)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

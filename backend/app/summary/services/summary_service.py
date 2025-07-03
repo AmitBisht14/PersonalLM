@@ -13,8 +13,8 @@ class SummaryService:
         try:
             # Create a chat request with the text and prompt
             messages = [
-                Message(role="system", content="You are a helpful assistant that generates summaries based on provided instructions."),
-                Message(role="user", content=f"Instructions for summarization:\n{request.prompt}\n\nText to summarize:\n{request.text}")
+                Message(role="system", content="You are a seasoned podcast scriptwriter creating fun, emotional, structured podcast scripts for 'Two mics, One Vibe' in HEnglish. Follow all formatting, tone, and structural cues strictly\nI want you to act as a dialogue writter for the podcast. This podcast has conversation between A guy and his girlfriend who read something and had a discussion on that topic\nOne of the voice is an exciting voice (Name: Celine(Girlfriend))\nAnother voice brings depth and intrigue. (Name: Jesse(Boyfriend))\nStrictly follow this: Each person will speak for at least for 15-20seconds and then other person will start speaking, which means in a 5minutes script switching of speaker should happen 8 times maximum. For expressions use these tags [laughs], [laughs harder], [starts laughing], [wheezing], [whispers], [sighs], [exhales], [sarcastic], [curious], [excited], [crying], [snorts], [mischievously]\n"),
+                Message(role="user", content=f"Instructions for scriptwriter:\n{request.prompt}\nContent for generating script:\n{request.text}")
             ]
             chat_request = ChatRequest(
                 messages=messages,

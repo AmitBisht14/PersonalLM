@@ -67,7 +67,7 @@ export const fetchSummaryPrompt = async (): Promise<string> => {
   try {
     const prompts = await fetchPromptsApi();
     const summaryPrompt = prompts.find(p => p.name === 'Generate Summary')?.prompt || 
-      'Please summarize the following content:';
+      'Generate Script';
     return summaryPrompt;
   } catch (error) {
     console.error('Error fetching summary prompt:', error);
